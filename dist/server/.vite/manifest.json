@@ -1,0 +1,15 @@
+{
+  "/home/muffinman/Maison_Masque/app/styles/app.css": {
+    "file": "assets/app-Bd2eIabX.css",
+    "src": "/home/muffinman/Maison_Masque/app/styles/app.css"
+  },
+  "virtual:remix/server-build": {
+    "file": "index.js",
+    "name": "server-build",
+    "src": "virtual:remix/server-build",
+    "isEntry": true,
+    "assets": [
+      "assets/app-Bd2eIabX.css"
+    ]
+  }
+}

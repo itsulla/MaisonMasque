@@ -1,0 +1,127 @@
+{
+  "/home/muffinman/Maison_Masque/app/styles/app.css": {
+    "file": "assets/app-Bd2eIabX.css",
+    "src": "/home/muffinman/Maison_Masque/app/styles/app.css"
+  },
+  "_RitualCard-Dami-g8A.js": {
+    "file": "assets/RitualCard-Dami-g8A.js",
+    "name": "RitualCard",
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js"
+    ]
+  },
+  "_components-Bobdr4P6.js": {
+    "file": "assets/components-Bobdr4P6.js",
+    "name": "components",
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js"
+    ]
+  },
+  "_jsx-runtime-CASrxSZM.js": {
+    "file": "assets/jsx-runtime-CASrxSZM.js",
+    "name": "jsx-runtime"
+  },
+  "app/entry.client.tsx": {
+    "file": "assets/entry.client-CK6tc9UN.js",
+    "name": "entry.client",
+    "src": "app/entry.client.tsx",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js"
+    ]
+  },
+  "app/root.tsx?__remix-build-client-route": {
+    "file": "assets/root-BLEkvMSN.js",
+    "name": "root",
+    "src": "app/root.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js"
+    ],
+    "dynamicImports": [
+      "node_modules/@shopify/hydrogen/dist/production/log-seo-tags-TY72EQWZ.js"
+    ],
+    "assets": [
+      "assets/app-Bd2eIabX.css"
+    ]
+  },
+  "app/routes/$.tsx?__remix-build-client-route": {
+    "file": "assets/_-D2cY_2Ux.js",
+    "name": "_",
+    "src": "app/routes/$.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js"
+    ]
+  },
+  "app/routes/_index.tsx?__remix-build-client-route": {
+    "file": "assets/_index-C2tbHyXj.js",
+    "name": "_index",
+    "src": "app/routes/_index.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js",
+      "_RitualCard-Dami-g8A.js"
+    ]
+  },
+  "app/routes/cart.tsx?__remix-build-client-route": {
+    "file": "assets/cart-Bfbr7nXH.js",
+    "name": "cart",
+    "src": "app/routes/cart.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js"
+    ]
+  },
+  "app/routes/collections.$handle.tsx?__remix-build-client-route": {
+    "file": "assets/collections._handle-LVKBkn2b.js",
+    "name": "collections._handle",
+    "src": "app/routes/collections.$handle.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_RitualCard-Dami-g8A.js",
+      "_components-Bobdr4P6.js"
+    ]
+  },
+  "app/routes/policies.$handle.tsx?__remix-build-client-route": {
+    "file": "assets/policies._handle-DxQs0uYD.js",
+    "name": "policies._handle",
+    "src": "app/routes/policies.$handle.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js"
+    ]
+  },
+  "app/routes/products.$handle.tsx?__remix-build-client-route": {
+    "file": "assets/products._handle-CXCnxV6W.js",
+    "name": "products._handle",
+    "src": "app/routes/products.$handle.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js",
+      "_components-Bobdr4P6.js"
+    ]
+  },
+  "app/routes/quiz.tsx?__remix-build-client-route": {
+    "file": "assets/quiz-6erz818c.js",
+    "name": "quiz",
+    "src": "app/routes/quiz.tsx?__remix-build-client-route",
+    "isEntry": true,
+    "imports": [
+      "_jsx-runtime-CASrxSZM.js"
+    ]
+  },
+  "node_modules/@shopify/hydrogen/dist/production/log-seo-tags-TY72EQWZ.js": {
+    "file": "assets/log-seo-tags-TY72EQWZ-DCHH-_Gl.js",
+    "name": "log-seo-tags-TY72EQWZ",
+    "src": "node_modules/@shopify/hydrogen/dist/production/log-seo-tags-TY72EQWZ.js",
+    "isDynamicEntry": true
+  }
+}

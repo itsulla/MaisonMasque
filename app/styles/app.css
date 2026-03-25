@@ -1,0 +1,307 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600&display=swap");
+
+@import "./tailwind.css";
+
+/* ---- Base styles ---- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  line-height: 1.7;
+}
+
+/* ---- Noise texture overlay ---- */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ---- Skip to content ---- */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  padding: 8px 24px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: top 0.2s ease;
+}
+
+.skip-to-content:focus {
+  top: 8px;
+}
+
+/* ---- Focus rings ---- */
+*:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* ---- Selection ---- */
+
+::selection {
+  background-color: var(--color-gold);
+  color: var(--color-cream);
+}
+
+/* ---- Scrollbar ---- */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ivory);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-stone);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-sand) var(--color-ivory);
+}
+
+/* ---- Keyframes ---- */
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes lineGrow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---- Utility classes ---- */
+
+.animate-fade-up {
+  animation: fadeUp 0.8s ease both;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .animate-line-grow {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+.animate-line-grow {
+  animation: lineGrow 0.8s ease both;
+  transform-origin: center;
+}
+
+.section-label {
+  color: var(--color-gold);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  font-weight: 600;
+}
+
+.heading-display {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Product card hover: Ken Burns + button ---- */
+.ritual-img-inner {
+  transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  will-change: transform;
+}
+
+.ritual:hover .ritual-img-inner {
+  transform: scale(1.05) var(--drift, translate(-8px, -4px));
+}
+
+.ritual-add {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease;
+}
+
+.ritual:hover .ritual-add {
+  transform: rotate(90deg);
+  background: var(--color-ink);
+  color: var(--color-cream);
+  border-color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual-img-inner {
+    transition: none;
+    will-change: auto;
+  }
+  .ritual:hover .ritual-img-inner {
+    transform: none;
+  }
+  .ritual-add {
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .ritual:hover .ritual-add {
+    transform: none;
+  }
+}
+
+/* ---- Ritual card entrance ---- */
+.ritual-hidden {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.ritual-visible {
+  animation: ritualEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes ritualEnter {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ritual-visible .ritual-num {
+  color: #C5A55A;
+  transition: color 1.2s ease 0.3s;
+}
+
+.ritual-visible .ritual-num.settled {
+  color: #8A8279;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ritual-hidden {
+    opacity: 1;
+    transform: none;
+  }
+  .ritual-visible {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .ritual-visible .ritual-num {
+    color: #8A8279;
+    transition: none;
+  }
+}
+
+/* ---- Scroll-triggered reveal ---- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children delays */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Seal pulse ---- */
+@keyframes sealPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .philosophy.in-view .seal-circle-outer {
+    animation: sealPulse 4s ease-in-out infinite 0s;
+  }
+  .philosophy.in-view .seal-circle-middle {
+    animation: sealPulse 4s ease-in-out infinite 0.8s;
+  }
+  .philosophy.in-view .seal-circle-inner {
+    animation: sealPulse 4s ease-in-out infinite 1.6s;
+  }
+}
+
+/* ---- Skeleton shimmer ---- */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-sand) 25%,
+    var(--color-ivory) 37%,
+    var(--color-sand) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 2px;
+}

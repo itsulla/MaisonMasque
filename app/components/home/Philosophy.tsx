@@ -1,0 +1,73 @@
+import {Seal} from '~/components/shared/Seal';
+
+export function Philosophy() {
+  return (
+    <section className="philosophy in-view py-24 px-6 overflow-hidden relative">
+      {/* Gradient transition from cream to ink */}
+      <div className="absolute inset-0 bg-gradient-to-b from-cream via-ink/90 to-ink -z-10" />
+
+      {/* Decorative circles */}
+      <div className="absolute top-[-100px] left-[-100px] w-[400px] h-[400px] rounded-full border border-gold/5" />
+      <div className="absolute top-[200px] left-[60%] w-[300px] h-[300px] rounded-full border border-gold/5" />
+      <div className="absolute top-[100px] left-[30%] w-[200px] h-[200px] rounded-full border border-gold/5" />
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        {/* Left column */}
+        <div>
+          <span className="text-gold-light text-[11px] uppercase tracking-[4px] font-semibold font-body">
+            Our Philosophy
+          </span>
+
+          <h2 className="font-display text-[clamp(28px,3.5vw,42px)] text-cream mt-4 leading-snug">
+            We believe a mask is not{' '}
+            <em className="italic text-gold-light">skincare.</em> It is a{' '}
+            <em className="italic text-gold-light">moment.</em>
+          </h2>
+
+          <p className="text-sm text-cream/45 leading-relaxed mt-6">
+            In a world of ten-step routines and algorithm-driven hauls, we
+            chose a different path. Maison Masque curates only five masks
+            &mdash; each selected from Korea&apos;s most revered skincare
+            houses for a single, clear intention. We source directly from Hong
+            Kong, authenticate every batch, and ship with the care of a house
+            that believes in fewer, better things.
+          </p>
+
+          <p className="text-sm text-cream/45 leading-relaxed mt-6">
+            A sheet mask is fifteen minutes of stillness. A veil between the
+            world and your skin. We don&apos;t sell products &mdash; we offer
+            rituals. Each one an invitation to pause, to breathe, to feel the
+            difference between routine and ceremony.
+          </p>
+
+          {/* Stats row */}
+          <div className="philo-stats flex gap-8 mt-10">
+            <div>
+              <div className="font-display text-3xl text-gold">5</div>
+              <div className="text-[10px] uppercase tracking-[3px] text-cream/40 mt-1">
+                Curated Brands
+              </div>
+            </div>
+            <div>
+              <div className="font-display text-3xl text-gold">40+</div>
+              <div className="text-[10px] uppercase tracking-[3px] text-cream/40 mt-1">
+                Countries
+              </div>
+            </div>
+            <div>
+              <div className="font-display text-3xl text-gold">100%</div>
+              <div className="text-[10px] uppercase tracking-[3px] text-cream/40 mt-1">
+                Authenticated
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="flex justify-center">
+          <Seal />
+        </div>
+      </div>
+    </section>
+  );
+}
