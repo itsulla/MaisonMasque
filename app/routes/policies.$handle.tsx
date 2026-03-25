@@ -1,4 +1,16 @@
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
+
+interface Policy {
+  title: string;
+  body: string;
+  handle?: string;
+}
+
+interface LoaderData {
+  policy: Policy;
+  __isMockData: boolean;
+}
 
 const POLICY_QUERY = `#graphql
   query PolicyQuery($privacyPolicy: Boolean!, $termsOfService: Boolean!, $refundPolicy: Boolean!, $shippingPolicy: Boolean!) {
@@ -49,7 +61,7 @@ const MOCK_POLICIES: Record<string, {title: string; body: string}> = {
   },
   'shipping-policy': {
     title: 'Shipping Policy',
-    body: '<p>All orders are shipped with care and reverence. We offer complimentary shipping on orders over the following thresholds: Australia $60 AUD, United Kingdom \u00A345, European Union \u20AC50, South Africa R750.</p><p>Estimated delivery times: Australia 5\u20138 days, UK 7\u201312 days, EU 8\u201314 days, South Africa 10\u201316 days, Rest of World 10\u201321 days.</p>',
+    body: '<p>All orders are shipped with care and reverence. We offer complimentary shipping on orders over the following thresholds: Australia $60 AUD, United Kingdom \u00A345, European Union \u20AC50, South Africa R750.</p><p>Estimated delivery times: Australia 5\u20138 days, UK 7\u201312 days, EU 8\u201314 days, South Africa 10\u201316 days.</p>',
   },
 };
 
@@ -63,12 +75,12 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   ];
 };
 
-export async function loader({params, context}: any) {
+export async function loader({params, context}: LoaderFunctionArgs): Promise<LoaderData> {
   const {handle} = params;
-  const policyKey = POLICY_MAP[handle];
+  const policyKey = handle ? POLICY_MAP[handle] : undefined;
 
   if (!policyKey) {
-    throw new Response('Policy not found', {status: 404});
+    throw new Response('Not Found', {status: 404});
   }
 
   try {
@@ -79,31 +91,33 @@ export async function loader({params, context}: any) {
       shippingPolicy: policyKey === 'shippingPolicy',
     };
 
-    const {shop} = await context.storefront.query(POLICY_QUERY, {
+    const {shop} = await (context as any).storefront.query(POLICY_QUERY, {
       variables,
     });
 
     const policy = shop[policyKey];
 
-    if (!policy) {
-      const mock = MOCK_POLICIES[handle];
-      if (!mock) throw new Response('Policy not found', {status: 404});
-      return {policy: mock};
+    if (policy) {
+      return {policy, __isMockData: false};
     }
 
-    return {policy};
+    const mock = handle ? MOCK_POLICIES[handle] : undefined;
+    if (!mock) throw new Response('Not Found', {status: 404});
+    console.warn('[MOCK_FALLBACK]', {route: `policies/${handle}`, reason: 'Policy not found in Storefront API'});
+    return {policy: mock, __isMockData: true};
   } catch (error) {
     if (error instanceof Response) throw error;
 
-    console.error('Failed to fetch policy:', error);
-    const mock = MOCK_POLICIES[handle];
-    if (!mock) throw new Response('Policy not found', {status: 404});
-    return {policy: mock};
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[MOCK_FALLBACK]', {route: `policies/${handle}`, reason: message});
+    const mock = handle ? MOCK_POLICIES[handle] : undefined;
+    if (!mock) throw new Response('Not Found', {status: 404});
+    return {policy: mock, __isMockData: true};
   }
 }
 
 export default function PolicyRoute() {
-  const {policy} = useLoaderData<typeof loader>();
+  const {policy} = useLoaderData<LoaderData>();
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
@@ -117,6 +131,18 @@ export default function PolicyRoute() {
           prose-p:mb-4"
         dangerouslySetInnerHTML={{__html: policy.body}}
       />
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center px-6">
+      <h1 className="font-display text-3xl mb-4">Something went wrong</h1>
+      <p className="text-stone text-sm mb-8">We couldn't load this page. Please try again.</p>
+      <a href="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
+        Return to the Maison
+      </a>
     </div>
   );
 }

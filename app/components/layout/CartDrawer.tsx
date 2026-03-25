@@ -1,4 +1,5 @@
 import {CartForm} from '@shopify/hydrogen';
+import {useEffect, useRef, useCallback} from 'react';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -22,9 +23,32 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
     0,
   );
 
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Handle ESC key to close the drawer
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose],
+  );
+
+  // Focus the close button when drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        closeButtonRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   return (
     <div
       className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      onKeyDown={handleKeyDown}
     >
       {/* Backdrop */}
       <div
@@ -32,10 +56,14 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Drawer */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Shopping bag"
         className={`absolute right-0 top-0 bg-cream w-96 max-w-[90vw] h-full flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -51,6 +79,7 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
             )}
           </div>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             className="text-ink"
             aria-label="Close cart"
@@ -172,13 +201,17 @@ function CartLineItem({line}: {line: any}) {
             <button
               type="submit"
               className="w-7 h-7 border border-sand flex items-center justify-center text-xs text-ink hover:border-gold transition-colors"
-              aria-label="Decrease quantity"
+              aria-label={`Decrease quantity of ${title}`}
             >
               &minus;
             </button>
           </CartForm>
 
-          <span className="text-xs text-ink font-body w-4 text-center">
+          <span
+            className="text-xs text-ink font-body w-4 text-center"
+            aria-live="polite"
+            aria-label={`Quantity: ${line.quantity}`}
+          >
             {line.quantity}
           </span>
 
@@ -197,7 +230,7 @@ function CartLineItem({line}: {line: any}) {
             <button
               type="submit"
               className="w-7 h-7 border border-sand flex items-center justify-center text-xs text-ink hover:border-gold transition-colors"
-              aria-label="Increase quantity"
+              aria-label={`Increase quantity of ${title}`}
             >
               +
             </button>
@@ -214,7 +247,7 @@ function CartLineItem({line}: {line: any}) {
         <button
           type="submit"
           className="text-stone hover:text-ink transition-colors"
-          aria-label="Remove item"
+          aria-label={`Remove ${title} from cart`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

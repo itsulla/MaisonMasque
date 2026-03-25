@@ -1,19 +1,35 @@
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {ProductPage} from '~/components/product/ProductPage';
 import {PRODUCT_QUERY} from '~/lib/queries';
 
-// Product page component — try to import, fallback to inline
-let ProductPage: React.FC<{product: any}>;
-
-try {
-  ProductPage =
-    require('~/components/product/ProductPage').ProductPage;
-} catch {
-  ProductPage = ({product}: {product: any}) => (
-    <DefaultProductLayout product={product} />
-  );
+interface Product {
+  id: string;
+  title: string;
+  handle: string;
+  vendor: string;
+  descriptionHtml: string;
+  featuredImage: {url: string; altText: string | null} | null;
+  priceRange: {
+    minVariantPrice: {amount: string; currencyCode: string};
+  };
+  variants: {
+    nodes: Array<{
+      id: string;
+      title: string;
+      availableForSale: boolean;
+      price: {amount: string; currencyCode: string};
+    }>;
+  };
+  metafields: Array<{key: string; value: string}>;
 }
 
-const MOCK_PRODUCT = {
+interface LoaderData {
+  product: Product;
+  __isMockData: boolean;
+}
+
+const MOCK_PRODUCT: Product = {
   id: 'gid://shopify/Product/mock',
   title: 'Bio-Collagen Real Deep Mask',
   handle: 'biodance-collagen',
@@ -40,136 +56,103 @@ const MOCK_PRODUCT = {
   ],
 };
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
+export const meta: MetaFunction<typeof loader> = ({data, params}) => {
   const product = data?.product;
+  const title = product
+    ? `${product.title} | Maison Masque`
+    : 'Product | Maison Masque';
+  const description = product
+    ? `Shop ${product.title} by ${product.vendor} at Maison Masque. Curated Korean sheet masks shipped worldwide.`
+    : 'Shop curated Korean sheet masks at Maison Masque.';
+  const imageUrl = product?.featuredImage?.url;
+  const canonicalUrl = `https://maisonmasque.com/products/${params.handle}`;
+
   return [
-    {
-      title: product
-        ? `${product.title} | Maison Masque`
-        : 'Product | Maison Masque',
-    },
-    {
-      name: 'description',
-      content: product
-        ? `Shop ${product.title} by ${product.vendor} at Maison Masque. Curated Korean sheet masks shipped worldwide.`
-        : 'Shop curated Korean sheet masks at Maison Masque.',
-    },
+    {title},
+    {name: 'description', content: description},
+    {tagName: 'link', rel: 'canonical', href: canonicalUrl},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:type', content: 'product'},
+    ...(imageUrl ? [{property: 'og:image', content: imageUrl}] : []),
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
+    ...(imageUrl ? [{name: 'twitter:image', content: imageUrl}] : []),
   ];
 };
 
-export async function loader({params, context}: any) {
+export async function loader({params, context}: LoaderFunctionArgs): Promise<LoaderData> {
   const {handle} = params;
 
   try {
-    const {product} = await context.storefront.query(PRODUCT_QUERY, {
+    const {product} = await (context as any).storefront.query(PRODUCT_QUERY, {
       variables: {handle},
     });
 
     if (!product) {
-      throw new Response('Product not found', {status: 404});
+      throw new Response('Not Found', {status: 404});
     }
 
-    return {product};
+    return {product, __isMockData: false};
   } catch (error) {
-    // If it's a Response (404), re-throw
     if (error instanceof Response) throw error;
 
-    console.error('Failed to fetch product:', error);
-    return {product: {...MOCK_PRODUCT, handle}};
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[MOCK_FALLBACK]', {route: `products/${handle}`, reason: message});
+    return {product: {...MOCK_PRODUCT, handle: handle ?? MOCK_PRODUCT.handle}, __isMockData: true};
   }
 }
 
-function DefaultProductLayout({product}: {product: any}) {
+function ProductJsonLd({product}: {product: Product}) {
   const price = product.priceRange?.minVariantPrice;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.descriptionHtml
+      ? product.descriptionHtml.replace(/<[^>]*>/g, '')
+      : '',
+    image: product.featuredImage?.url,
+    brand: {
+      '@type': 'Brand',
+      name: product.vendor,
+    },
+    offers: {
+      '@type': 'Offer',
+      price: price?.amount ?? '0',
+      priceCurrency: price?.currencyCode ?? 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+  };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-stone mb-8">
-        <a href="/" className="hover:text-gold transition-colors">
-          Home
-        </a>
-        <span className="mx-2">/</span>
-        <a
-          href="/collections/the-five-rituals"
-          className="hover:text-gold transition-colors"
-        >
-          The Five Rituals
-        </a>
-        <span className="mx-2">/</span>
-        <span className="text-ink">{product.title}</span>
-      </nav>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        {/* Image */}
-        <div className="bg-gradient-to-b from-sand/20 to-cream aspect-square flex items-center justify-center">
-          {product.featuredImage ? (
-            <img
-              src={product.featuredImage.url}
-              alt={product.featuredImage.altText ?? product.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <span className="font-display text-2xl text-sand">
-              {product.vendor}
-            </span>
-          )}
-        </div>
-
-        {/* Details */}
-        <div className="flex flex-col justify-center">
-          {/* Ritual label */}
-          {product.metafields?.[0] && (
-            <p className="text-[11px] uppercase tracking-[4px] font-semibold text-gold mb-2">
-              Ritual {product.metafields[0].value} &mdash;{' '}
-              {product.metafields[1]?.value}
-            </p>
-          )}
-
-          {/* Brand */}
-          <p className="text-[10px] uppercase tracking-[3px] text-stone">
-            {product.vendor}
-          </p>
-
-          {/* Title */}
-          <h1 className="font-display text-[28px] mt-2">{product.title}</h1>
-
-          {/* Price */}
-          {price && (
-            <p className="font-display text-2xl mt-4">
-              ${parseFloat(price.amount).toFixed(0)}
-            </p>
-          )}
-
-          {/* Description */}
-          {product.descriptionHtml && (
-            <div
-              className="text-sm text-stone leading-relaxed mt-6 prose prose-sm"
-              dangerouslySetInnerHTML={{__html: product.descriptionHtml}}
-            />
-          )}
-
-          {/* Add to cart placeholder */}
-          <button className="mt-8 w-full bg-ink text-cream py-4 text-xs uppercase tracking-[3px] font-body font-medium hover:bg-espresso transition-colors">
-            Add to ritual
-          </button>
-
-          {/* Trust badges */}
-          <div className="flex gap-6 mt-6 text-[10px] uppercase tracking-[2px] text-stone">
-            <span>Authentic</span>
-            <span>&middot;</span>
-            <span>Ships from HK</span>
-            <span>&middot;</span>
-            <span>Free returns</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{__html: JSON.stringify(jsonLd)}}
+    />
   );
 }
 
 export default function ProductRoute() {
-  const {product} = useLoaderData<typeof loader>();
+  const {product} = useLoaderData<LoaderData>();
 
-  return <ProductPage product={product} />;
+  return (
+    <>
+      <ProductJsonLd product={product} />
+      <ProductPage product={product} />
+    </>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center px-6">
+      <h1 className="font-display text-3xl mb-4">Something went wrong</h1>
+      <p className="text-stone text-sm mb-8">We couldn't load this page. Please try again.</p>
+      <a href="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
+        Return to the Maison
+      </a>
+    </div>
+  );
 }

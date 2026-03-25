@@ -1,19 +1,35 @@
 import {Link} from '@remix-run/react';
+import {forwardRef} from 'react';
 
 interface NavigationProps {
   cartCount: number;
   onCartOpen?: () => void;
   onMobileMenuOpen?: () => void;
+  isMobileMenuOpen?: boolean;
+  isCartOpen?: boolean;
+  /** Ref forwarded to the hamburger button for focus management */
+  hamburgerRef?: React.Ref<HTMLButtonElement>;
 }
 
 export function Navigation({
   cartCount,
   onCartOpen,
   onMobileMenuOpen,
+  isMobileMenuOpen = false,
+  isCartOpen = false,
+  hamburgerRef,
 }: NavigationProps) {
+  const bagLabel =
+    cartCount > 0
+      ? `Bag, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`
+      : 'Bag, empty';
+
   return (
     <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-xl border-b border-sand">
-      <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <nav
+        className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"
+        aria-label="Main navigation"
+      >
         {/* Left nav links */}
         <div className="hidden lg:flex items-center gap-8 flex-1">
           <Link
@@ -32,9 +48,11 @@ export function Navigation({
 
         {/* Mobile hamburger */}
         <button
+          ref={hamburgerRef}
           className="lg:hidden"
           onClick={onMobileMenuOpen}
           aria-label="Open menu"
+          aria-expanded={isMobileMenuOpen}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -81,10 +99,15 @@ export function Navigation({
           <button
             onClick={onCartOpen}
             className="relative text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
+            aria-label={bagLabel}
+            aria-expanded={isCartOpen}
           >
             Bag
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-4 bg-gold text-cream rounded-full text-[10px] w-4 h-4 flex items-center justify-center">
+              <span
+                className="absolute -top-2 -right-4 bg-gold text-cream rounded-full text-[10px] w-4 h-4 flex items-center justify-center"
+                aria-hidden="true"
+              >
                 {cartCount}
               </span>
             )}
@@ -95,7 +118,8 @@ export function Navigation({
         <button
           className="lg:hidden relative"
           onClick={onCartOpen}
-          aria-label="Open cart"
+          aria-label={bagLabel}
+          aria-expanded={isCartOpen}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -112,7 +136,10 @@ export function Navigation({
             />
           </svg>
           {cartCount > 0 && (
-            <span className="absolute -top-2 -right-2 bg-gold text-cream rounded-full text-[10px] w-4 h-4 flex items-center justify-center">
+            <span
+              className="absolute -top-2 -right-2 bg-gold text-cream rounded-full text-[10px] w-4 h-4 flex items-center justify-center"
+              aria-hidden="true"
+            >
               {cartCount}
             </span>
           )}

@@ -17,6 +17,9 @@ import {ScrollProgress} from '~/components/shared/ScrollProgress';
 import appStyles from '~/styles/app.css?url';
 
 export function links() {
+  const googleFontsUrl =
+    'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600&display=swap';
+
   return [
     {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
     {
@@ -25,26 +28,36 @@ export function links() {
       crossOrigin: 'anonymous' as const,
     },
     {
+      rel: 'preload',
+      href: googleFontsUrl,
+      as: 'style',
+    },
+    {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600&display=swap',
+      href: googleFontsUrl,
     },
     {rel: 'stylesheet', href: appStyles},
   ];
 }
 
 export const meta: MetaFunction = () => {
+  const title = 'Maison Masque | Korean Sheet Masks | The House of Masks';
+  const description =
+    'Curated Korean sheet masks from Biodance, Torriden, Abib, Mediheal and Numbuzin. Shipped worldwide to Australia, UK, Europe and South Africa.';
+
   return [
     {charset: 'utf-8'},
     {name: 'viewport', content: 'width=device-width,initial-scale=1'},
-    {
-      title:
-        'Maison Masque | Korean Sheet Masks | The House of Masks',
-    },
-    {
-      name: 'description',
-      content:
-        'Curated Korean sheet masks from Biodance, Torriden, Abib, Mediheal and Numbuzin. Shipped worldwide to Australia, UK, Europe and South Africa.',
-    },
+    {title},
+    {name: 'description', content: description},
+    {property: 'og:title', content: title},
+    {property: 'og:description', content: description},
+    {property: 'og:type', content: 'website'},
+    {property: 'og:site_name', content: 'Maison Masque'},
+    {property: 'og:locale', content: 'en_US'},
+    {name: 'twitter:card', content: 'summary_large_image'},
+    {name: 'twitter:title', content: title},
+    {name: 'twitter:description', content: description},
   ];
 };
 

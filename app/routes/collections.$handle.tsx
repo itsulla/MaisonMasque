@@ -1,8 +1,34 @@
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import {RitualCard} from '~/components/home/RitualCard';
 import {COLLECTION_QUERY} from '~/lib/queries';
 
-const MOCK_COLLECTION = {
+interface Product {
+  id: string;
+  title: string;
+  handle: string;
+  vendor: string;
+  featuredImage: {url: string; altText: string | null} | null;
+  priceRange: {
+    minVariantPrice: {amount: string; currencyCode: string};
+  };
+}
+
+interface Collection {
+  title: string;
+  description: string;
+  handle: string;
+  products: {
+    nodes: Product[];
+  };
+}
+
+interface LoaderData {
+  collection: Collection;
+  __isMockData: boolean;
+}
+
+const MOCK_COLLECTION: Collection = {
   title: 'The Five Rituals',
   description:
     'Five masks. Five intentions. Each chosen from Korea\'s most revered houses.',
@@ -78,29 +104,30 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
   ];
 };
 
-export async function loader({params, context}: any) {
+export async function loader({params, context}: LoaderFunctionArgs): Promise<LoaderData> {
   const {handle} = params;
 
   try {
-    const {collection} = await context.storefront.query(COLLECTION_QUERY, {
+    const {collection} = await (context as any).storefront.query(COLLECTION_QUERY, {
       variables: {handle},
     });
 
     if (!collection) {
-      throw new Response('Collection not found', {status: 404});
+      throw new Response('Not Found', {status: 404});
     }
 
-    return {collection};
+    return {collection, __isMockData: false};
   } catch (error) {
     if (error instanceof Response) throw error;
 
-    console.error('Failed to fetch collection:', error);
-    return {collection: {...MOCK_COLLECTION, handle}};
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[MOCK_FALLBACK]', {route: `collections/${handle}`, reason: message});
+    return {collection: {...MOCK_COLLECTION, handle: handle ?? MOCK_COLLECTION.handle}, __isMockData: true};
   }
 }
 
 export default function CollectionRoute() {
-  const {collection} = useLoaderData<typeof loader>();
+  const {collection} = useLoaderData<LoaderData>();
   const products = collection.products?.nodes ?? [];
 
   return (
@@ -122,7 +149,7 @@ export default function CollectionRoute() {
 
       {/* Product grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 border border-sand">
-        {products.map((product: any, index: number) => (
+        {products.map((product: Product, index: number) => (
           <a
             key={product.id}
             href={`/products/${product.handle}`}
@@ -162,6 +189,18 @@ export default function CollectionRoute() {
           <div className="w-[60px] h-px bg-gold mx-auto mt-12" />
         </div>
       )}
+    </div>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center px-6">
+      <h1 className="font-display text-3xl mb-4">Something went wrong</h1>
+      <p className="text-stone text-sm mb-8">We couldn't load this page. Please try again.</p>
+      <a href="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
+        Return to the Maison
+      </a>
     </div>
   );
 }

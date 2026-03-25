@@ -1,8 +1,11 @@
 import {Link} from '@remix-run/react';
+import {useEffect, useRef, useCallback} from 'react';
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Ref to the hamburger button that triggers this menu, used to return focus on close */
+  triggerRef?: React.RefObject<HTMLButtonElement>;
 }
 
 const menuLinks = [
@@ -12,10 +15,49 @@ const menuLinks = [
   {label: 'Account', href: '/account'},
 ];
 
-export function MobileMenu({isOpen, onClose}: MobileMenuProps) {
+// NOTE: For full accessibility, the parent component should set the `inert`
+// attribute on the main content area when this menu is open, e.g.:
+//   <main inert={isMobileMenuOpen ? '' : undefined}>
+// This prevents focus and interaction with background content while the
+// dialog is open, complementing the focus trap implemented here.
+
+export function MobileMenu({isOpen, onClose, triggerRef}: MobileMenuProps) {
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const previousActiveElement = useRef<Element | null>(null);
+
+  // Handle ESC key to close the menu
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose],
+  );
+
+  // Focus management: focus first link on open, return focus on close
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElement.current = document.activeElement;
+      // Delay focus to allow transition to start
+      const timer = setTimeout(() => {
+        firstLinkRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      // Return focus to the trigger (hamburger button) when closing
+      if (triggerRef?.current) {
+        triggerRef.current.focus();
+      } else if (previousActiveElement.current instanceof HTMLElement) {
+        previousActiveElement.current.focus();
+      }
+    }
+  }, [isOpen, triggerRef]);
+
   return (
     <div
       className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      onKeyDown={handleKeyDown}
     >
       {/* Backdrop */}
       <div
@@ -23,10 +65,14 @@ export function MobileMenu({isOpen, onClose}: MobileMenuProps) {
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Menu panel */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
         className={`absolute top-0 left-0 bg-cream w-80 max-w-[85vw] h-full p-8 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
@@ -62,10 +108,11 @@ export function MobileMenu({isOpen, onClose}: MobileMenuProps) {
 
         {/* Navigation links */}
         <nav className="flex flex-col">
-          {menuLinks.map((link) => (
+          {menuLinks.map((link, index) => (
             <Link
               key={link.href}
               to={link.href}
+              ref={index === 0 ? firstLinkRef : undefined}
               onClick={onClose}
               className="font-display text-lg text-ink py-3 border-b border-sand hover:text-gold transition-colors"
             >

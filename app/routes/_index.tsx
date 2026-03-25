@@ -1,26 +1,28 @@
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import {Hero} from '~/components/home/Hero';
 import {Divider} from '~/components/shared/Divider';
 import {FiveRituals} from '~/components/home/FiveRituals';
 import {Philosophy} from '~/components/home/Philosophy';
+import {RitualGuide} from '~/components/home/RitualGuide';
+import {Subscription} from '~/components/home/Subscription';
 import {COLLECTION_QUERY} from '~/lib/queries';
 
-// Components that may not exist yet — lazy placeholders
-let RitualGuide: React.FC;
-let Subscription: React.FC;
-
-try {
-  RitualGuide =
-    require('~/components/home/RitualGuide').RitualGuide;
-} catch {
-  RitualGuide = () => null;
+interface Product {
+  id: string;
+  title: string;
+  handle: string;
+  vendor: string;
+  featuredImage: {url: string; altText: string | null} | null;
+  priceRange: {
+    minVariantPrice: {amount: string; currencyCode: string};
+  };
+  metafields: Array<{key: string; value: string}>;
 }
 
-try {
-  Subscription =
-    require('~/components/home/Subscription').Subscription;
-} catch {
-  Subscription = () => null;
+interface LoaderData {
+  products: Product[];
+  __isMockData: boolean;
 }
 
 export const meta: MetaFunction = () => {
@@ -37,7 +39,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const MOCK_PRODUCTS = [
+const MOCK_PRODUCTS: Product[] = [
   {
     id: 'gid://shopify/Product/mock-1',
     title: 'Bio-Collagen Real Deep Mask',
@@ -110,38 +112,75 @@ const MOCK_PRODUCTS = [
   },
 ];
 
-export async function loader({context}: any) {
+export async function loader({context}: LoaderFunctionArgs): Promise<LoaderData> {
   try {
-    const {collection} = await context.storefront.query(COLLECTION_QUERY, {
+    const {collection} = await (context as any).storefront.query(COLLECTION_QUERY, {
       variables: {handle: 'the-five-rituals'},
     });
 
     if (!collection) {
-      return {products: MOCK_PRODUCTS};
+      console.warn('[MOCK_FALLBACK]', {route: '_index', reason: 'Collection not found'});
+      return {products: MOCK_PRODUCTS, __isMockData: true};
     }
 
     const products = collection.products?.nodes ?? [];
-    return {products: products.length > 0 ? products : MOCK_PRODUCTS};
+    if (products.length > 0) {
+      return {products, __isMockData: false};
+    }
+
+    console.warn('[MOCK_FALLBACK]', {route: '_index', reason: 'Collection empty'});
+    return {products: MOCK_PRODUCTS, __isMockData: true};
   } catch (error) {
-    console.error('Failed to fetch collection:', error);
-    return {products: MOCK_PRODUCTS};
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn('[MOCK_FALLBACK]', {route: '_index', reason: message});
+    return {products: MOCK_PRODUCTS, __isMockData: true};
   }
 }
 
+const ORGANIZATION_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Maison Masque',
+  url: 'https://maisonmasque.com',
+  description:
+    'Curated Korean sheet masks from Biodance, Torriden, Abib, Mediheal and Numbuzin. Sourced in Hong Kong, shipped worldwide.',
+};
+
 export default function Homepage() {
-  const {products} = useLoaderData<typeof loader>();
+  const data = useLoaderData<LoaderData>();
 
   return (
     <>
+      {data.__isMockData && process.env.NODE_ENV !== 'production' && (
+        <div className="bg-gold/10 text-center py-1 text-xs text-gold">
+          Demo mode — Storefront API not connected
+        </div>
+      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{__html: JSON.stringify(ORGANIZATION_JSON_LD)}}
+      />
       <Hero />
       <Divider />
-      <FiveRituals products={products} />
+      <FiveRituals products={data.products} />
       <Divider />
       <Philosophy />
       <Divider />
-      {RitualGuide && <RitualGuide />}
-      {RitualGuide && <Divider />}
-      {Subscription && <Subscription />}
+      <RitualGuide />
+      <Divider />
+      <Subscription />
     </>
+  );
+}
+
+export function ErrorBoundary() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center px-6">
+      <h1 className="font-display text-3xl mb-4">Something went wrong</h1>
+      <p className="text-stone text-sm mb-8">We couldn't load this page. Please try again.</p>
+      <a href="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
+        Return to the Maison
+      </a>
+    </div>
   );
 }
