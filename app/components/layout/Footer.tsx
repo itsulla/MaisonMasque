@@ -39,7 +39,7 @@ function FooterLinkColumn({
           <li key={link.href}>
             <Link
               to={link.href}
-              className="text-sm text-stone hover:text-gold transition-colors"
+              className="text-sm text-walnut hover:text-gold transition-colors"
             >
               {link.label}
             </Link>
@@ -52,7 +52,7 @@ function FooterLinkColumn({
 
 export function Footer() {
   return (
-    <footer className="bg-cream border-t border-sand">
+    <footer id="footer" className="bg-cream border-t border-sand">
       <div className="py-16 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-12">
           {/* Brand column */}
@@ -63,7 +63,7 @@ export function Footer() {
             <p className="text-[9px] uppercase tracking-[3px] text-stone mt-1">
               The House of Masks &middot; Est. 2026
             </p>
-            <p className="text-sm text-stone leading-relaxed mt-4">
+            <p className="text-sm text-walnut leading-relaxed mt-4">
               A curated ritual of five transformative masks, crafted with
               intention. Each mask is an invitation to pause, to honour the
               skin, and to return to yourself.

@@ -1,136 +1,178 @@
-import {useLoaderData, type MetaFunction} from '@remix-run/react';
+import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
 import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
 
-interface Policy {
-  title: string;
-  body: string;
-  handle?: string;
-}
-
 interface LoaderData {
-  policy: Policy;
-  __isMockData: boolean;
+  handle: string;
 }
 
-const POLICY_QUERY = `#graphql
-  query PolicyQuery($privacyPolicy: Boolean!, $termsOfService: Boolean!, $refundPolicy: Boolean!, $shippingPolicy: Boolean!) {
-    shop {
-      privacyPolicy @include(if: $privacyPolicy) {
-        title
-        body
-        handle
-      }
-      termsOfService @include(if: $termsOfService) {
-        title
-        body
-        handle
-      }
-      refundPolicy @include(if: $refundPolicy) {
-        title
-        body
-        handle
-      }
-      shippingPolicy @include(if: $shippingPolicy) {
-        title
-        body
-        handle
-      }
-    }
-  }
-` as const;
-
-const POLICY_MAP: Record<string, string> = {
-  'privacy-policy': 'privacyPolicy',
-  'terms-of-service': 'termsOfService',
-  'refund-policy': 'refundPolicy',
-  'shipping-policy': 'shippingPolicy',
-};
-
-const MOCK_POLICIES: Record<string, {title: string; body: string}> = {
+const POLICIES: Record<string, {title: string; sections: {heading: string; body: string}[]}> = {
   'privacy-policy': {
     title: 'Privacy Policy',
-    body: '<p>At Maison Masque, we respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, and safeguard your information when you visit our store.</p><p>We collect information you provide directly to us, such as when you create an account, make a purchase, subscribe to our newsletter, or contact us. This may include your name, email address, postal address, phone number, and payment information.</p><p>For questions about this policy, please contact the maison.</p>',
+    sections: [
+      {
+        heading: 'Information We Collect',
+        body: 'When you visit Maison Masque, we collect information you provide directly — your name, email address, shipping address, and payment details when you place an order. We also collect browsing data automatically, including your IP address, browser type, pages viewed, and referring URL, through cookies and analytics tools.',
+      },
+      {
+        heading: 'How We Use Your Information',
+        body: 'We use your information to fulfil orders, process payments, send shipping notifications, and communicate with you about your account. If you subscribe to our newsletter, we will send occasional emails about new products and promotions. You may unsubscribe at any time.',
+      },
+      {
+        heading: 'Data Sharing',
+        body: 'We do not sell your personal information. We share data only with service providers essential to operating the store: Shopify (hosting and payments), our shipping carrier, and Google Analytics. Each provider is bound by their own privacy commitments.',
+      },
+      {
+        heading: 'Cookies',
+        body: 'We use essential cookies for cart functionality and session management, plus analytics cookies (Google Analytics) to understand how visitors use the site. You can disable non-essential cookies in your browser settings.',
+      },
+      {
+        heading: 'Your Rights',
+        body: 'You may request access to, correction of, or deletion of your personal data at any time by contacting us. EU and UK residents have additional rights under GDPR, including data portability and the right to restrict processing.',
+      },
+      {
+        heading: 'Contact',
+        body: 'For questions about this policy, please contact the maison at hello@maisonmasque.com.',
+      },
+    ],
   },
   'terms-of-service': {
     title: 'Terms of Service',
-    body: '<p>Welcome to Maison Masque. By accessing or using our website and services, you agree to be bound by these terms of service. Please read them carefully.</p><p>All products are subject to availability. We reserve the right to discontinue any product at any time. Prices are subject to change without notice.</p><p>For the complete terms, please contact the maison.</p>',
+    sections: [
+      {
+        heading: 'Agreement to Terms',
+        body: 'By accessing or using maisonmasque.com, you agree to be bound by these terms. If you do not agree, please do not use the site. We reserve the right to update these terms at any time.',
+      },
+      {
+        heading: 'Products & Pricing',
+        body: 'All products are subject to availability. Prices are displayed in your selected currency and include applicable taxes where required. We reserve the right to modify prices without notice. Errors in pricing will be corrected and, if an order has been charged incorrectly, we will refund the difference.',
+      },
+      {
+        heading: 'Orders & Payment',
+        body: 'By placing an order, you represent that you are at least 18 years old and that the payment information you provide is accurate. We accept payment via Shopify Payments and Stripe. Orders are confirmed via email once payment is processed.',
+      },
+      {
+        heading: 'Intellectual Property',
+        body: 'All content on this site — including text, images, logos, and design — is the property of Maison Masque and may not be reproduced, distributed, or used without written permission.',
+      },
+      {
+        heading: 'Limitation of Liability',
+        body: 'Maison Masque is not liable for any indirect, incidental, or consequential damages arising from your use of the site or products. Our total liability is limited to the amount you paid for the relevant order.',
+      },
+      {
+        heading: 'Governing Law',
+        body: 'These terms are governed by the laws of Hong Kong SAR. Any disputes will be resolved in the courts of Hong Kong.',
+      },
+    ],
   },
   'refund-policy': {
     title: 'Refund Policy',
-    body: '<p>At Maison Masque, we want you to be completely satisfied with your ritual. If for any reason you are not happy with your purchase, we offer a 30-day return policy for unopened products in their original packaging.</p><p>To initiate a return, please contact the maison with your order number and reason for return.</p>',
+    sections: [
+      {
+        heading: '30-Day Returns',
+        body: 'We accept returns within 30 days of delivery for unopened products in their original packaging. To initiate a return, email us at hello@maisonmasque.com with your order number.',
+      },
+      {
+        heading: 'Refund Process',
+        body: 'Once we receive and inspect the returned product, we will process your refund to the original payment method within 5-7 business days. Shipping costs are non-refundable unless the return is due to our error.',
+      },
+      {
+        heading: 'Damaged or Incorrect Items',
+        body: 'If your order arrives damaged or you received the wrong product, contact us within 48 hours of delivery with photos. We will send a replacement at no additional cost or issue a full refund including shipping.',
+      },
+      {
+        heading: 'Subscription Cancellations',
+        body: 'La Cérémonie subscriptions can be cancelled at any time before your next billing date. Already-shipped orders cannot be refunded under the subscription policy, but the standard 30-day return policy applies to the products themselves.',
+      },
+    ],
   },
   'shipping-policy': {
     title: 'Shipping Policy',
-    body: '<p>All orders are shipped with care and reverence. We offer complimentary shipping on orders over the following thresholds: Australia $60 AUD, United Kingdom \u00A345, European Union \u20AC50, South Africa R750.</p><p>Estimated delivery times: Australia 5\u20138 days, UK 7\u201312 days, EU 8\u201314 days, South Africa 10\u201316 days.</p>',
+    sections: [
+      {
+        heading: 'Processing Time',
+        body: 'Orders are processed within 1-2 business days. You will receive a confirmation email with tracking information once your order ships.',
+      },
+      {
+        heading: 'Delivery Estimates',
+        body: 'Australia: 5-8 business days. United Kingdom: 7-12 business days. European Union: 8-14 business days. South Africa: 10-16 business days. Rest of World: 10-21 business days. Express options are available at checkout.',
+      },
+      {
+        heading: 'Complimentary Shipping',
+        body: 'We offer complimentary standard shipping on orders over the following thresholds: Australia A$60, United Kingdom £35, European Union €50, South Africa R750, United States $45.',
+      },
+      {
+        heading: 'Customs & Duties',
+        body: 'International orders may be subject to customs duties and taxes imposed by the destination country. These charges are the responsibility of the recipient and are not included in the product price or shipping cost.',
+      },
+      {
+        heading: 'Lost or Delayed Shipments',
+        body: 'If your order has not arrived within the estimated delivery window, please contact us. We will work with our carrier to locate your package. If it cannot be found, we will reship or refund your order at no cost.',
+      },
+    ],
   },
 };
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
+  const handle = data?.handle ?? '';
+  const policy = POLICIES[handle];
+  const title = policy ? `${policy.title} | Maison Masque` : 'Policy | Maison Masque';
   return [
-    {
-      title: data?.policy?.title
-        ? `${data.policy.title} | Maison Masque`
-        : 'Policy | Maison Masque',
-    },
+    {title},
+    {name: 'description', content: `${policy?.title ?? 'Legal policy'} for Maison Masque.`},
   ];
 };
 
-export async function loader({params, context}: LoaderFunctionArgs): Promise<LoaderData> {
-  const {handle} = params;
-  const policyKey = handle ? POLICY_MAP[handle] : undefined;
-
-  if (!policyKey) {
+export async function loader({params}: LoaderFunctionArgs): Promise<LoaderData> {
+  const handle = params.handle ?? '';
+  if (!POLICIES[handle]) {
     throw new Response('Not Found', {status: 404});
   }
-
-  try {
-    const variables = {
-      privacyPolicy: policyKey === 'privacyPolicy',
-      termsOfService: policyKey === 'termsOfService',
-      refundPolicy: policyKey === 'refundPolicy',
-      shippingPolicy: policyKey === 'shippingPolicy',
-    };
-
-    const {shop} = await (context as any).storefront.query(POLICY_QUERY, {
-      variables,
-    });
-
-    const policy = shop[policyKey];
-
-    if (policy) {
-      return {policy, __isMockData: false};
-    }
-
-    const mock = handle ? MOCK_POLICIES[handle] : undefined;
-    if (!mock) throw new Response('Not Found', {status: 404});
-    console.warn('[MOCK_FALLBACK]', {route: `policies/${handle}`, reason: 'Policy not found in Storefront API'});
-    return {policy: mock, __isMockData: true};
-  } catch (error) {
-    if (error instanceof Response) throw error;
-
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn('[MOCK_FALLBACK]', {route: `policies/${handle}`, reason: message});
-    const mock = handle ? MOCK_POLICIES[handle] : undefined;
-    if (!mock) throw new Response('Not Found', {status: 404});
-    return {policy: mock, __isMockData: true};
-  }
+  return {handle};
 }
 
 export default function PolicyRoute() {
-  const {policy} = useLoaderData<LoaderData>();
+  const {handle} = useLoaderData<LoaderData>();
+  const policy = POLICIES[handle];
+
+  if (!policy) return null;
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
-      <h1 className="font-display text-[clamp(28px,3.5vw,42px)] text-center mb-12">
+      {/* Breadcrumb */}
+      <nav className="text-xs text-stone mb-8" aria-label="Breadcrumb">
+        <Link to="/" className="hover:text-gold transition-colors">Home</Link>
+        <span className="mx-1.5">/</span>
+        <span className="text-walnut">{policy.title}</span>
+      </nav>
+
+      <h1 className="font-display text-[clamp(28px,3.5vw,42px)] mb-2">
         {policy.title}
       </h1>
-      <div
-        className="prose prose-sm max-w-none text-stone leading-relaxed
-          prose-headings:font-display prose-headings:text-ink
-          prose-a:text-gold prose-a:no-underline hover:prose-a:underline
-          prose-p:mb-4"
-        dangerouslySetInnerHTML={{__html: policy.body}}
-      />
+      <p className="text-xs text-stone mb-10">
+        Last updated: April 2026
+      </p>
+
+      <div className="flex flex-col gap-8">
+        {policy.sections.map((section) => (
+          <div key={section.heading}>
+            <h2 className="font-display text-lg mb-2">{section.heading}</h2>
+            <p className="text-sm text-walnut leading-[1.7]">{section.body}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Contact CTA */}
+      <div className="border-t border-sand mt-12 pt-8 text-center">
+        <p className="text-sm text-walnut">
+          Questions about this policy?
+        </p>
+        <a
+          href="mailto:hello@maisonmasque.com"
+          className="text-xs text-gold uppercase tracking-[3px] hover:text-ink transition-colors mt-2 inline-block"
+        >
+          Contact the maison &rarr;
+        </a>
+      </div>
     </div>
   );
 }
@@ -138,11 +180,11 @@ export default function PolicyRoute() {
 export function ErrorBoundary() {
   return (
     <div className="min-h-[50vh] flex flex-col items-center justify-center px-6">
-      <h1 className="font-display text-3xl mb-4">Something went wrong</h1>
-      <p className="text-stone text-sm mb-8">We couldn't load this page. Please try again.</p>
-      <a href="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
+      <h1 className="font-display text-3xl mb-4">Policy not found</h1>
+      <p className="text-walnut text-sm mb-8">This page doesn&apos;t exist.</p>
+      <Link to="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
         Return to the Maison
-      </a>
+      </Link>
     </div>
   );
 }

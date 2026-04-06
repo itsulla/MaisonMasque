@@ -4,6 +4,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -90,6 +91,76 @@ body::after {
   scrollbar-color: var(--color-sand) var(--color-ivory);
 }
 
+/* ---- Sticky nav scroll states ---- */
+
+.nav-header {
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nav-top {
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+}
+
+.nav-scrolled {
+  background-color: rgba(250, 248, 243, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--color-sand);
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.03);
+}
+
+/* ---- Cart badge scale-in ---- */
+
+@keyframes cartBadgeIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -14px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  color: var(--color-cream);
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  font-family: var(--font-body);
+  animation: cartBadgeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.cart-badge-mobile {
+  top: -8px;
+  right: -8px;
+}
+
+/* ---- Cart drawer ---- */
+
+.cart-drawer {
+  width: 380px;
+  max-width: 90vw;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-header,
+  .nav-logo-link,
+  .nav-subtitle {
+    transition: none !important;
+  }
+  .cart-badge {
+    animation: none;
+  }
+}
+
 /* ---- Keyframes ---- */
 
 @keyframes fadeUp {
@@ -109,6 +180,125 @@ body::after {
   }
   to {
     transform: scaleX(1);
+  }
+}
+
+/* ---- Hero choreographed reveal ---- */
+
+@keyframes heroLineDraw {
+  from { height: 0; }
+  to   { height: 60px; }
+}
+
+@keyframes heroFadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroWordReveal {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes heroSubtitleIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroCtasIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Initial hidden states */
+.hero-line-draw {
+  height: 0;
+  animation: heroLineDraw 0.8s ease-out 0s both;
+}
+
+.hero-overline {
+  opacity: 0;
+  animation: heroFadeSlideUp 0.5s ease both;
+  animation-delay: 0.6s;
+}
+
+.hero-word-clip {
+  overflow: hidden;
+}
+
+.hero-word {
+  display: inline-block;
+  transform: translateY(100%);
+  animation: heroWordReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* delay set via inline style per word: 0.9s, 1.2s, 1.5s */
+}
+
+.hero-gold-line {
+  transform-origin: center;
+  transform: scaleX(0);
+  animation: lineGrow 1s ease both;
+  animation-delay: 1.6s;
+}
+
+.hero-subtitle {
+  opacity: 0;
+  animation: heroSubtitleIn 0.8s ease both;
+  animation-delay: 2.2s;
+}
+
+.hero-ctas {
+  opacity: 0;
+  animation: heroCtasIn 0.5s ease both;
+  animation-delay: 2.8s;
+}
+
+/* ---- Reduced motion: show everything immediately ---- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-line-draw {
+    animation: none;
+    height: 60px;
+  }
+  .hero-overline {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .hero-word {
+    animation: none;
+    transform: none;
+  }
+  .hero-gold-line {
+    animation: none;
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  .hero-subtitle {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .hero-ctas {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -151,6 +341,39 @@ body::after {
   letter-spacing: -0.01em;
 }
 
+/* ---- Product card image shimmer + overlay ---- */
+
+@keyframes ritualShimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.ritual-img-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(197, 165, 90, 0.06) 50%,
+    transparent 100%
+  );
+  animation: ritualShimmer 1.5s ease-in-out infinite;
+}
+
+/* Gradient overlay — blends image into text below */
+.ritual-img-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, transparent 60%, #FAF8F3 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* ---- Product card hover: Ken Burns + button ---- */
 .ritual-img-inner {
   transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -176,6 +399,10 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ritual-img-shimmer::before {
+    animation: none;
+    display: none;
+  }
   .ritual-img-inner {
     transition: none;
     will-change: auto;
@@ -302,4 +529,340 @@ body::after {
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 2px;
+}
+
+/* ---- Email popup ("Join the Maison") ---- */
+
+.email-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 23, 20, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.3s ease;
+}
+
+.email-popup-modal {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 20px;
+  background: var(--color-cream);
+  border: 1px solid var(--color-sand);
+  border-radius: 12px;
+  padding: 40px;
+  transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+
+.email-popup-input {
+  display: block;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--color-sand);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.email-popup-input::placeholder {
+  color: var(--color-stone);
+}
+
+.email-popup-input:focus {
+  border-color: var(--color-gold);
+}
+
+.email-popup-submit {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin-top: 12px;
+  background: var(--color-ink);
+  color: var(--color-cream);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.email-popup-submit:hover {
+  background: var(--color-espresso);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .email-popup-backdrop {
+    transition: none;
+  }
+  .email-popup-modal {
+    transition: none;
+  }
+}
+
+/* ---- Product quick-view modal ---- */
+
+.quickview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 23, 20, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: opacity 0.3s ease;
+}
+
+.quickview-modal {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 20px;
+  background: var(--color-cream);
+  border: 1px solid var(--color-sand);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.quickview-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+.quickview-image {
+  min-height: 360px;
+}
+
+@media (max-width: 640px) {
+  .quickview-grid {
+    grid-template-columns: 1fr;
+  }
+  .quickview-image {
+    min-height: 240px;
+    max-height: 280px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quickview-backdrop {
+    transition: none;
+  }
+  .quickview-modal {
+    transition: none;
+  }
+}
+
+/* ---- Scroll snap (mobile proximity) ---- */
+
+@media (max-width: 768px) {
+  main {
+    scroll-snap-type: y proximity;
+  }
+
+  #hero,
+  #rituals,
+  #philosophy,
+  #practice,
+  #subscription {
+    scroll-snap-align: start;
+  }
+}
+
+/* ---- Back to top button ---- */
+
+.back-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 90;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-ink);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.back-to-top:hover {
+  background: var(--color-espresso);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: none;
+  }
+}
+
+/* ---- Skin Ritual Quiz ---- */
+
+.quiz-option {
+  min-height: 48px;
+  padding: 12px 16px;
+}
+
+@keyframes quizEnterRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes quizEnterLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.quiz-enter-right {
+  animation: quizEnterRight 0.4s ease both;
+}
+
+.quiz-enter-left {
+  animation: quizEnterLeft 0.4s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-enter-right,
+  .quiz-enter-left {
+    animation: none;
+  }
+}
+
+/* ---- Social proof toast ---- */
+
+.social-proof-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 80;
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-cream);
+  border: 1px solid var(--color-sand);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.social-proof-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-proof-toast {
+    transition: none;
+  }
+}
+
+/* ---- Print stylesheet ---- */
+
+@media print {
+  /* Hide non-content elements */
+  .nav-header,
+  .skip-to-content,
+  .scroll-progress,
+  .email-popup-backdrop,
+  .social-proof-toast,
+  .back-to-top,
+  .cart-drawer,
+  .quickview-backdrop,
+  footer,
+  .announcement-bar {
+    display: none !important;
+  }
+
+  /* Reset background and colors */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Single column layout */
+  main {
+    max-width: 100% !important;
+  }
+
+  section {
+    padding: 1rem 0 !important;
+    break-inside: avoid;
+  }
+
+  * {
+    animation: none !important;
+    transition: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Show link URLs */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    color: #666;
+  }
+
+  /* Don't show URLs for anchors or internal nav */
+  a[href^="#"]::after,
+  a[href^="/"]::after {
+    content: "";
+  }
+
+  /* Make images reasonable */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* ---- Product detail page ---- */
+
+/* Hide placeholder when real image is present */
+.pdp-image-wrap img + .pdp-placeholder {
+  display: none;
+}
+
+/* Show placeholder when image fails (JS adds this class) */
+.pdp-placeholder-active .pdp-placeholder {
+  display: flex !important;
 }

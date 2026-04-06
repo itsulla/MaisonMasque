@@ -1,58 +1,125 @@
 import {Link} from '@remix-run/react';
-import {forwardRef} from 'react';
+import {useEffect, useState, useRef} from 'react';
+import {useCart} from '~/lib/cartContext';
 
-interface NavigationProps {
-  cartCount: number;
-  onCartOpen?: () => void;
-  onMobileMenuOpen?: () => void;
-  isMobileMenuOpen?: boolean;
-  isCartOpen?: boolean;
-  /** Ref forwarded to the hamburger button for focus management */
-  hamburgerRef?: React.Ref<HTMLButtonElement>;
+const SCROLL_THRESHOLD = 80;
+const SECTION_IDS = ['hero', 'rituals', 'philosophy', 'practice', 'subscription', 'footer'];
+
+interface NavLinkItem {
+  label: string;
+  href: string;
+  section?: string;
 }
 
-export function Navigation({
-  cartCount,
-  onCartOpen,
-  onMobileMenuOpen,
-  isMobileMenuOpen = false,
-  isCartOpen = false,
-  hamburgerRef,
-}: NavigationProps) {
+const LEFT_LINKS: NavLinkItem[] = [
+  {label: 'The Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
+  {label: 'Skin Quiz', href: '/quiz'},
+];
+
+const RIGHT_LINKS: NavLinkItem[] = [
+  {label: 'Subscribe', href: '#subscription', section: 'subscription'},
+  {label: 'Account', href: '/account'},
+];
+
+export function Navigation() {
+  const {itemCount, open: openCart} = useCart();
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('hero');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Scroll-aware background transition
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > SCROLL_THRESHOLD);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, {passive: true});
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // IntersectionObserver for active section tracking
+  useEffect(() => {
+    const visibleSections = new Map<string, number>();
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            visibleSections.set(entry.target.id, entry.intersectionRatio);
+          } else {
+            visibleSections.delete(entry.target.id);
+          }
+        }
+        let best = '';
+        let bestRatio = 0;
+        for (const [id, ratio] of visibleSections) {
+          if (ratio > bestRatio) {
+            best = id;
+            bestRatio = ratio;
+          }
+        }
+        if (best) setActiveSection(best);
+      },
+      {
+        rootMargin: '-20% 0px -20% 0px',
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      },
+    );
+
+    for (const id of SECTION_IDS) {
+      const el = document.getElementById(id);
+      if (el) observerRef.current.observe(el);
+    }
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, []);
+
   const bagLabel =
-    cartCount > 0
-      ? `Bag, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`
+    itemCount > 0
+      ? `Bag, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`
       : 'Bag, empty';
 
+  const navLinkClass = (section?: string) =>
+    `text-xs uppercase tracking-[3px] transition-colors duration-300 ${
+      section && activeSection === section
+        ? 'text-gold'
+        : 'text-walnut hover:text-gold'
+    }`;
+
   return (
-    <header className="sticky top-0 z-50 bg-cream/95 backdrop-blur-xl border-b border-sand">
+    <header
+      className={`nav-header sticky top-0 z-[100] transition-all duration-300 ease-in-out ${
+        scrolled ? 'nav-scrolled' : 'nav-top'
+      }`}
+    >
       <nav
         className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"
         aria-label="Main navigation"
       >
         {/* Left nav links */}
         <div className="hidden lg:flex items-center gap-8 flex-1">
-          <Link
-            to="/collections/the-five-rituals"
-            className="text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
-          >
-            The Rituals
-          </Link>
-          <Link
-            to="/quiz"
-            className="text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
-          >
-            Skin Quiz
-          </Link>
+          {LEFT_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              className={navLinkClass(link.section)}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
         {/* Mobile hamburger */}
         <button
-          ref={hamburgerRef}
           className="lg:hidden"
-          onClick={onMobileMenuOpen}
+          onClick={() => {
+            // Dispatch custom event for MobileMenu
+            window.dispatchEvent(new CustomEvent('mm:mobile-menu', {detail: {open: true}}));
+          }}
           aria-label="Open menu"
-          aria-expanded={isMobileMenuOpen}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -72,43 +139,49 @@ export function Navigation({
 
         {/* Center logo */}
         <div className="flex flex-col items-center">
-          <Link to="/">
+          <Link
+            to="/"
+            className="nav-logo-link block transition-transform duration-300 ease-in-out"
+            style={{transform: scrolled ? 'scale(0.9)' : 'scale(1)'}}
+          >
             <span className="font-display text-[28px] uppercase tracking-[4px] text-ink">
               MAISON MASQUE
             </span>
           </Link>
-          <span className="text-[9px] uppercase tracking-[3px] text-stone">
+          <span
+            className="nav-subtitle text-[9px] uppercase tracking-[3px] text-stone transition-all duration-300 ease-in-out overflow-hidden"
+            style={{
+              opacity: scrolled ? 0 : 1,
+              maxHeight: scrolled ? '0px' : '20px',
+            }}
+          >
             The House of Masks &middot; Est. 2026
           </span>
         </div>
 
         {/* Right nav links */}
         <div className="hidden lg:flex items-center gap-8 flex-1 justify-end">
-          <Link
-            to="#subscription"
-            className="text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
-          >
-            Subscribe
-          </Link>
-          <Link
-            to="/account"
-            className="text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
-          >
-            Account
-          </Link>
+          {RIGHT_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              className={navLinkClass(link.section)}
+            >
+              {link.label}
+            </Link>
+          ))}
           <button
-            onClick={onCartOpen}
+            onClick={openCart}
             className="relative text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
             aria-label={bagLabel}
-            aria-expanded={isCartOpen}
           >
             Bag
-            {cartCount > 0 && (
+            {itemCount > 0 && (
               <span
-                className="absolute -top-2 -right-4 bg-gold text-cream rounded-full text-[10px] w-4 h-4 flex items-center justify-center"
+                className="cart-badge"
                 aria-hidden="true"
               >
-                {cartCount}
+                {itemCount}
               </span>
             )}
           </button>
@@ -117,9 +190,8 @@ export function Navigation({
         {/* Mobile cart button */}
         <button
           className="lg:hidden relative"
-          onClick={onCartOpen}
+          onClick={openCart}
           aria-label={bagLabel}
-          aria-expanded={isCartOpen}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -135,12 +207,12 @@ export function Navigation({
               d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
             />
           </svg>
-          {cartCount > 0 && (
+          {itemCount > 0 && (
             <span
-              className="absolute -top-2 -right-2 bg-gold text-cream rounded-full text-[10px] w-4 h-4 flex items-center justify-center"
+              className="cart-badge cart-badge-mobile"
               aria-hidden="true"
             >
-              {cartCount}
+              {itemCount}
             </span>
           )}
         </button>

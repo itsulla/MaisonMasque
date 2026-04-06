@@ -29,7 +29,7 @@ const steps = [
 
 export function RitualGuide() {
   return (
-    <section className="py-20 px-6 max-w-7xl mx-auto">
+    <section id="practice" aria-label="The Practice" className="py-20 px-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center mb-12">
         <SectionLabel>The Practice</SectionLabel>
@@ -51,7 +51,7 @@ export function RitualGuide() {
               {step.numeral}
             </div>
             <h3 className="font-display text-base mt-4">{step.heading}</h3>
-            <p className="text-xs text-stone mt-2 leading-relaxed">
+            <p className="text-xs text-walnut mt-2 leading-relaxed">
               {step.description}
             </p>
           </div>

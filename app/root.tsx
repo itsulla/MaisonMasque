@@ -4,16 +4,19 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
   type MetaFunction,
 } from '@remix-run/react';
-import {useState} from 'react';
 import {AnnouncementBar} from '~/components/layout/AnnouncementBar';
 import {Navigation} from '~/components/layout/Navigation';
 import {Footer} from '~/components/layout/Footer';
 import {CartDrawer} from '~/components/layout/CartDrawer';
 import {MobileMenu} from '~/components/layout/MobileMenu';
 import {ScrollProgress} from '~/components/shared/ScrollProgress';
+import {EmailPopup} from '~/components/shared/EmailPopup';
+import {BackToTop} from '~/components/shared/BackToTop';
+import {SocialProofToast} from '~/components/shared/SocialProofToast';
+import {CartProvider} from '~/lib/cartContext';
+import {CurrencyProvider} from '~/lib/currencyContext';
 import appStyles from '~/styles/app.css?url';
 
 export function links() {
@@ -62,8 +65,6 @@ export const meta: MetaFunction = () => {
 };
 
 export async function loader({context}: any) {
-  // Normally fetch cart from Shopify via context.cart.get()
-  // For now return null so the app compiles without a connected store
   return {cart: null};
 }
 
@@ -91,17 +92,29 @@ export function HydrateFallback() {
   );
 }
 
-export default function App() {
-  const {cart} = useLoaderData<typeof loader>();
-  const [cartOpen, setCartOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const cartLines = cart?.lines?.nodes ?? cart?.lines ?? [];
-  const cartCount = cartLines.reduce(
-    (total: number, line: any) => total + (line.quantity ?? 0),
-    0,
+function AppShell() {
+  return (
+    <>
+      <a href="#main-content" className="skip-to-content">
+        Skip to content
+      </a>
+      <ScrollProgress />
+      <AnnouncementBar />
+      <Navigation />
+      <MobileMenu />
+      <CartDrawer />
+      <main id="main-content">
+        <Outlet />
+      </main>
+      <Footer />
+      <EmailPopup />
+      <SocialProofToast />
+      <BackToTop />
+    </>
   );
+}
 
+export default function App() {
   return (
     <html lang="en">
       <head>
@@ -111,29 +124,11 @@ export default function App() {
         <Links />
       </head>
       <body className="bg-cream text-ink font-body antialiased">
-        <a href="#main-content" className="skip-to-content">
-          Skip to content
-        </a>
-        <ScrollProgress />
-        <AnnouncementBar />
-        <Navigation
-          cartCount={cartCount}
-          onCartOpen={() => setCartOpen(true)}
-          onMobileMenuOpen={() => setMobileMenuOpen(true)}
-        />
-        <MobileMenu
-          isOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-        />
-        <CartDrawer
-          isOpen={cartOpen}
-          onClose={() => setCartOpen(false)}
-          cart={cart}
-        />
-        <main id="main-content">
-          <Outlet />
-        </main>
-        <Footer />
+        <CurrencyProvider>
+          <CartProvider>
+            <AppShell />
+          </CartProvider>
+        </CurrencyProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

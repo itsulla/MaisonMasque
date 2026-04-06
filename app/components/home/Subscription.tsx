@@ -1,12 +1,14 @@
 import {SectionLabel} from '~/components/shared/SectionLabel';
 import {Button} from '~/components/shared/Button';
+import {Price} from '~/components/shared/Price';
 
 const tiers = [
   {
     name: 'The Introduction',
     masks: '5 masks',
     frequency: 'Monthly',
-    price: '\u00A322/mo',
+    priceUsd: 28,
+    period: '/mo',
     save: 'Save 10%',
     featured: false,
   },
@@ -14,7 +16,8 @@ const tiers = [
     name: 'The Collection',
     masks: '10 masks',
     frequency: 'Monthly',
-    price: '\u00A338/mo',
+    priceUsd: 48,
+    period: '/mo',
     save: 'Save 15%',
     featured: true,
   },
@@ -22,7 +25,8 @@ const tiers = [
     name: 'The Archive',
     masks: '20 masks',
     frequency: 'Bi-monthly',
-    price: '\u00A368/2mo',
+    priceUsd: 86,
+    period: '/2mo',
     save: 'Save 20%',
     featured: false,
   },
@@ -30,7 +34,7 @@ const tiers = [
 
 export function Subscription() {
   return (
-    <section id="subscription" className="py-20 px-6 max-w-7xl mx-auto">
+    <section id="subscription" aria-label="La Cérémonie Subscription" className="py-20 px-6 max-w-7xl mx-auto">
       <div className="border border-sand">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left column */}
@@ -39,7 +43,7 @@ export function Subscription() {
             <h2 className="font-display text-[clamp(24px,3vw,36px)] mt-4">
               A ritual, delivered.
             </h2>
-            <p className="text-sm text-stone mt-4 leading-relaxed">
+            <p className="text-sm text-walnut mt-4 leading-relaxed">
               Choose your frequency, and we&apos;ll deliver a curated selection
               of our finest masks to your door each month. No algorithms, no
               guesswork &mdash; just the five rituals your skin needs, wrapped
@@ -67,14 +71,17 @@ export function Subscription() {
                 {/* Left */}
                 <div>
                   <div className="font-display text-lg">{tier.name}</div>
-                  <div className="text-xs text-stone mt-1">
+                  <div className="text-xs text-walnut mt-1">
                     {tier.masks} &middot; {tier.frequency}
                   </div>
                 </div>
 
                 {/* Right */}
                 <div className="text-right">
-                  <div className="font-display text-xl">{tier.price}</div>
+                  <div className="font-display text-xl">
+                    <Price amount={tier.priceUsd} className="" />
+                    <span className="text-sm text-stone">{tier.period}</span>
+                  </div>
                   <div className="text-[10px] uppercase text-gold mt-1">
                     {tier.save}
                   </div>

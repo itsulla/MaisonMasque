@@ -1,61 +1,31 @@
-import {CartForm} from '@shopify/hydrogen';
 import {useEffect, useRef, useCallback} from 'react';
+import {useCart, type CartLine} from '~/lib/cartContext';
+import {useCurrency} from '~/lib/currencyContext';
 
-interface CartDrawerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  cart: any;
-}
-
-export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
-  const lines = cart?.lines?.nodes ?? cart?.lines ?? [];
-  const subtotal =
-    cart?.cost?.subtotalAmount?.amount ??
-    cart?.cost?.totalAmount?.amount ??
-    '0';
-  const currencyCode =
-    cart?.cost?.subtotalAmount?.currencyCode ??
-    cart?.cost?.totalAmount?.currencyCode ??
-    'USD';
-
-  const itemCount = lines.reduce(
-    (total: number, line: any) => total + (line.quantity ?? 0),
-    0,
-  );
-
+export function CartDrawer() {
+  const {lines, itemCount, subtotal, isOpen, close} = useCart();
+  const {format: formatPrice} = useCurrency();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Handle ESC key to close the drawer
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
+      if (event.key === 'Escape') close();
     },
-    [onClose],
+    [close],
   );
-
-  // Focus the close button when drawer opens
-  useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        closeButtonRef.current?.focus();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
 
   return (
     <div
-      className={`fixed inset-0 z-50 ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      className={`fixed inset-0 z-[110] ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}
       onKeyDown={handleKeyDown}
     >
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 bg-ink/50 transition-opacity duration-300 ${
+        className={`absolute inset-0 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0'
         }`}
-        onClick={onClose}
+        style={{backgroundColor: 'rgba(26,23,20,0.4)'}}
+        onClick={close}
         aria-hidden="true"
       />
 
@@ -64,23 +34,23 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Shopping bag"
-        className={`absolute right-0 top-0 bg-cream w-96 max-w-[90vw] h-full flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`cart-drawer absolute right-0 top-0 bg-cream h-full flex flex-col border-l border-sand transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-sand p-6">
-          <div>
+          <div className="flex items-baseline gap-2">
             <h2 className="font-display text-xl text-ink">Your Ritual</h2>
             {itemCount > 0 && (
               <span className="text-xs text-stone">
-                {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                ({itemCount})
               </span>
             )}
           </div>
           <button
             ref={closeButtonRef}
-            onClick={onClose}
+            onClick={close}
             className="text-ink"
             aria-label="Close cart"
           >
@@ -103,11 +73,15 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
 
         {lines.length > 0 ? (
           <>
-            {/* Body */}
+            {/* Line items */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="flex flex-col gap-6">
-                {lines.map((line: any) => (
-                  <CartLineItem key={line.id} line={line} />
+              <div className="flex flex-col">
+                {lines.map((line, i) => (
+                  <CartLineItem
+                    key={line.id}
+                    line={line}
+                    isLast={i === lines.length - 1}
+                  />
                 ))}
               </div>
             </div>
@@ -115,36 +89,38 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
             {/* Footer */}
             <div className="border-t border-sand p-6">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-body font-medium text-ink uppercase tracking-[2px]">
-                  Subtotal
-                </span>
-                <span className="text-sm font-body font-medium text-ink">
-                  {formatMoney(subtotal, currencyCode)}
+                <span className="text-sm text-ink">Subtotal</span>
+                <span className="font-display text-sm text-ink">
+                  {formatPrice(subtotal)}
                 </span>
               </div>
-              <p className="text-xs text-stone mb-4">
+              <p className="text-xs text-walnut mb-4">
                 Complimentary shipping on orders over &pound;45
               </p>
-              <div className="w-full h-px bg-gold mb-4" />
-              <a
-                href={cart?.checkoutUrl ?? '/checkout'}
-                className="block w-full bg-ink text-cream text-center py-3 text-xs uppercase tracking-[3px] font-body font-medium hover:bg-espresso transition-colors"
+              <div className="w-[60px] h-px bg-gold mx-auto mb-4" />
+              <button
+                type="button"
+                className="block w-full bg-ink text-cream text-center h-12 text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-espresso transition-colors"
               >
                 Proceed to checkout
-              </a>
+              </button>
             </div>
           </>
         ) : (
           /* Empty state */
-          <div className="flex-1 flex flex-col items-center justify-center p-6">
-            <h3 className="font-display text-xl text-stone mb-4">
+          <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+            <h3 className="font-display text-xl text-ink mb-2">
               Your ritual awaits
             </h3>
+            <p className="text-[13px] text-walnut mb-6">
+              Explore our collection to begin
+            </p>
             <a
-              href="/collections/the-five-rituals"
-              className="inline-block border border-ink text-ink text-xs uppercase tracking-[3px] font-body font-medium px-8 py-3 hover:bg-ink hover:text-cream transition-colors"
+              href="#rituals"
+              onClick={close}
+              className="inline-block border border-sand text-ink text-[11px] uppercase tracking-[0.2em] font-semibold px-8 py-3 hover:border-ink hover:bg-ink hover:text-cream transition-colors"
             >
-              Explore the collection
+              Browse The Five Rituals
             </a>
           </div>
         )}
@@ -153,126 +129,75 @@ export function CartDrawer({isOpen, onClose, cart}: CartDrawerProps) {
   );
 }
 
-function CartLineItem({line}: {line: any}) {
-  const merchandise = line.merchandise;
-  const image = merchandise?.image;
-  const title = merchandise?.product?.title ?? merchandise?.title ?? '';
-  const price =
-    line.cost?.totalAmount?.amount ?? line.cost?.amountPerQuantity?.amount ?? '0';
-  const currencyCode =
-    line.cost?.totalAmount?.currencyCode ??
-    line.cost?.amountPerQuantity?.currencyCode ??
-    'USD';
+function CartLineItem({line, isLast}: {line: CartLine; isLast: boolean}) {
+  const {updateQuantity, removeItem} = useCart();
+  const {format: fmtPrice} = useCurrency();
+  const lineTotal = parseFloat(line.price.amount) * line.quantity;
 
   return (
-    <div className="flex gap-4">
+    <div className={`flex gap-4 py-4 ${isLast ? '' : 'border-b border-sand'}`}>
       {/* Thumbnail */}
-      {image?.url && (
-        <img
-          src={image.url}
-          alt={image.altText ?? title}
-          className="w-16 h-16 object-cover rounded"
-        />
-      )}
-
-      <div className="flex-1">
-        {/* Title */}
-        <h4 className="font-display text-sm text-ink leading-tight">{title}</h4>
-
-        {/* Price */}
-        <p className="text-xs text-stone mt-1">
-          {formatMoney(price, currencyCode)}
-        </p>
-
-        {/* Quantity controls */}
-        <div className="flex items-center gap-3 mt-2">
-          <CartForm
-            route="/cart"
-            action={CartForm.ACTIONS.LinesUpdate}
-            inputs={{
-              lines: [
-                {
-                  id: line.id,
-                  quantity: Math.max(0, line.quantity - 1),
-                },
-              ],
-            }}
-          >
-            <button
-              type="submit"
-              className="w-7 h-7 border border-sand flex items-center justify-center text-xs text-ink hover:border-gold transition-colors"
-              aria-label={`Decrease quantity of ${title}`}
-            >
-              &minus;
-            </button>
-          </CartForm>
-
-          <span
-            className="text-xs text-ink font-body w-4 text-center"
-            aria-live="polite"
-            aria-label={`Quantity: ${line.quantity}`}
-          >
-            {line.quantity}
-          </span>
-
-          <CartForm
-            route="/cart"
-            action={CartForm.ACTIONS.LinesUpdate}
-            inputs={{
-              lines: [
-                {
-                  id: line.id,
-                  quantity: line.quantity + 1,
-                },
-              ],
-            }}
-          >
-            <button
-              type="submit"
-              className="w-7 h-7 border border-sand flex items-center justify-center text-xs text-ink hover:border-gold transition-colors"
-              aria-label={`Increase quantity of ${title}`}
-            >
-              +
-            </button>
-          </CartForm>
-        </div>
+      <div className="w-[60px] h-[60px] flex-shrink-0 bg-cream overflow-hidden">
+        {line.image?.url ? (
+          <img
+            src={line.image.url}
+            alt={line.image.altText ?? line.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-b from-sand/30 to-ivory" />
+        )}
       </div>
 
-      {/* Remove */}
-      <CartForm
-        route="/cart"
-        action={CartForm.ACTIONS.LinesRemove}
-        inputs={{lineIds: [line.id]}}
-      >
-        <button
-          type="submit"
-          className="text-stone hover:text-ink transition-colors"
-          aria-label={`Remove ${title} from cart`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-4 h-4"
+      {/* Details */}
+      <div className="flex-1 min-w-0">
+        <h4 className="text-sm text-ink leading-tight truncate">{line.title}</h4>
+        <p className="text-[10px] uppercase tracking-[3px] text-stone mt-0.5">
+          {line.vendor}
+        </p>
+        {line.ritualLabel && (
+          <p className="text-[10px] text-gold mt-0.5">{line.ritualLabel}</p>
+        )}
+
+        {/* Quantity adjuster */}
+        <div className="flex items-center border border-sand h-7 w-fit mt-2">
+          <button
+            type="button"
+            onClick={() => updateQuantity(line.id, line.quantity - 1)}
+            className="w-7 h-full flex items-center justify-center text-stone hover:text-ink transition-colors text-xs"
+            aria-label={`Decrease quantity of ${line.title}`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18 18 6M6 6l12 12"
-            />
-          </svg>
+            &minus;
+          </button>
+          <span className="w-6 h-full flex items-center justify-center text-xs font-body border-x border-sand">
+            {line.quantity}
+          </span>
+          <button
+            type="button"
+            onClick={() => updateQuantity(line.id, line.quantity + 1)}
+            className="w-7 h-full flex items-center justify-center text-stone hover:text-ink transition-colors text-xs"
+            aria-label={`Increase quantity of ${line.title}`}
+          >
+            +
+          </button>
+        </div>
+
+        {/* Remove */}
+        <button
+          type="button"
+          onClick={() => removeItem(line.id)}
+          className="text-[11px] text-stone hover:underline mt-1"
+        >
+          Remove
         </button>
-      </CartForm>
+      </div>
+
+      {/* Line price */}
+      <span className="font-display text-sm text-ink flex-shrink-0">
+        {fmtPrice(lineTotal)}
+      </span>
     </div>
   );
-}
-
-function formatMoney(amount: string | number, currencyCode: string): string {
-  const value = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('en', {
-    style: 'currency',
-    currency: currencyCode,
-  }).format(value);
 }

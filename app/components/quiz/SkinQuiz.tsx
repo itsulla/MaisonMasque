@@ -1,143 +1,190 @@
-import {useState} from 'react';
+import {useState, useCallback} from 'react';
 import {QuizStep} from './QuizStep';
 import {QuizResult} from './QuizResult';
 
 const STEPS = [
   {
-    question: 'What is your skin type?',
-    options: ['Dry', 'Oily', 'Combination', 'Sensitive', 'Normal'],
+    question: 'What is your primary skin type?',
+    options: ['Dry', 'Oily', 'Combination', 'Sensitive'],
   },
   {
-    question: 'What is your primary concern?',
+    question: 'What concerns you most?',
     options: [
-      'Hydration',
+      'Dehydration',
       'Redness & irritation',
-      'Dullness',
-      'Anti-aging',
-      'Pore care',
+      'Pores & texture',
+      'Dullness & uneven tone',
+      'Fine lines',
     ],
   },
   {
     question: 'How often do you mask?',
+    options: ['Never tried', 'Once a week', '2\u20133 times a week', 'Daily'],
+  },
+  {
+    question: 'What texture do you prefer?',
     options: [
-      'Daily',
-      '2-3 times a week',
-      'Weekly',
-      'Occasionally',
-      "Never — I'm new",
+      'Sheet mask',
+      'Hydrogel (jelly)',
+      'Wrapping (peel-off)',
+      'Sleeping cream',
     ],
   },
   {
-    question: 'Which texture do you prefer?',
+    question: 'What matters most in your ritual?',
     options: [
-      'Hydrogel',
-      'Cotton/cellulose',
-      'Gummy/microfibre',
-      'Bio-cellulose',
-      'No preference',
-    ],
-  },
-  {
-    question: 'What matters most to you?',
-    options: [
-      'Visible results',
-      'Soothing comfort',
       'Deep hydration',
-      'Gentle formula',
-      'Brightening glow',
+      'Calming & soothing',
+      'Brightening & glow',
+      'Firming & elasticity',
     ],
   },
 ];
 
 function getRecommendation(answers: Record<number, string>): string {
-  const allAnswers = Object.values(answers);
+  const skinType = answers[0] ?? '';
+  const concern = answers[1] ?? '';
+  const goal = answers[4] ?? '';
 
-  if (
-    allAnswers.includes('Anti-aging') ||
-    allAnswers.includes('Hydrogel')
-  ) {
-    return 'biodance-collagen';
+  // Fine lines + Firming → Ritual II (Medicube Wrapping Mask)
+  if (concern === 'Fine lines' || goal === 'Firming & elasticity') {
+    return 'medicube-wrapping-mask';
   }
 
+  // Sensitive + Redness + Calming → Ritual III (Anua Heartleaf)
   if (
-    allAnswers.includes('Deep hydration') ||
-    allAnswers.includes('Dry')
+    skinType === 'Sensitive' ||
+    concern === 'Redness & irritation' ||
+    goal === 'Calming & soothing'
   ) {
-    return 'torriden-dive-in';
+    return 'anua-heartleaf-mask';
   }
 
-  if (
-    allAnswers.includes('Redness & irritation') ||
-    allAnswers.includes('Sensitive')
-  ) {
-    return 'abib-heartleaf';
+  // Oily + Pores + Sheet mask → Ritual IV (Medicube Vita Coating)
+  if (skinType === 'Oily' || concern === 'Pores & texture') {
+    return 'medicube-vita-coating-mask';
   }
 
+  // Combination + Dullness + Brightening → Ritual V (Laneige Cica)
   if (
-    allAnswers.includes('Hydration') ||
-    allAnswers.includes('No preference')
+    skinType === 'Combination' ||
+    concern === 'Dullness & uneven tone' ||
+    goal === 'Brightening & glow'
   ) {
-    return 'mediheal-nmf';
+    return 'laneige-cica-sleeping-mask';
   }
 
-  if (
-    allAnswers.includes('Brightening glow') ||
-    allAnswers.includes('Dullness')
-  ) {
-    return 'numbuzin-no3';
-  }
-
-  return 'torriden-dive-in';
+  // Dry + Dehydration + Deep hydration → Ritual I (Medicube PDRN Gel Mask)
+  return 'medicube-pdrn-gel-mask';
 }
 
 export function SkinQuiz() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [direction, setDirection] = useState<'forward' | 'back'>('forward');
+  const [transitioning, setTransitioning] = useState(false);
 
-  const handleSelect = (option: string) => {
-    const updatedAnswers = {...answers, [currentStep]: option};
-    setAnswers(updatedAnswers);
+  const totalSteps = STEPS.length;
+  const isResult = currentStep >= totalSteps;
 
-    // Auto-advance after a brief delay for visual feedback
-    setTimeout(() => {
-      if (currentStep < 4) {
-        setCurrentStep(currentStep + 1);
-      } else {
-        setCurrentStep(5);
-      }
-    }, 300);
-  };
+  const handleSelect = useCallback(
+    (option: string) => {
+      if (transitioning) return;
+      const updatedAnswers = {...answers, [currentStep]: option};
+      setAnswers(updatedAnswers);
 
-  const recommendedHandle =
-    currentStep === 5 ? getRecommendation(answers) : '';
+      // Auto-advance after 0.5s
+      setTransitioning(true);
+      setTimeout(() => {
+        setDirection('forward');
+        if (currentStep < totalSteps - 1) {
+          setCurrentStep(currentStep + 1);
+        } else {
+          setCurrentStep(totalSteps);
+        }
+        setTransitioning(false);
+      }, 500);
+    },
+    [answers, currentStep, totalSteps, transitioning],
+  );
+
+  const handleBack = useCallback(() => {
+    if (transitioning || currentStep <= 0) return;
+    setDirection('back');
+    setCurrentStep(currentStep - 1);
+  }, [currentStep, transitioning]);
+
+  const handleRestart = useCallback(() => {
+    setDirection('back');
+    setCurrentStep(0);
+    setAnswers({});
+  }, []);
+
+  const recommendedHandle = isResult ? getRecommendation(answers) : '';
+  const progressPct = isResult ? 100 : (currentStep / totalSteps) * 100;
 
   return (
-    <div className="max-w-2xl mx-auto py-16 px-6 text-center">
+    <div className="quiz-container max-w-2xl mx-auto py-16 px-6 text-center min-h-[70vh] flex flex-col">
       {/* Progress bar */}
       <div className="h-0.5 bg-sand w-full">
         <div
-          className="h-full bg-gold transition-all duration-500"
-          style={{width: `${(currentStep / 5) * 100}%`}}
+          className="h-full bg-gold transition-all duration-500 ease-out"
+          style={{width: `${progressPct}%`}}
         />
       </div>
 
-      <h1 className="font-display text-[clamp(28px,3.5vw,42px)] mt-10">
+      {/* Back button */}
+      {currentStep > 0 && !isResult && (
+        <button
+          type="button"
+          onClick={handleBack}
+          className="self-start mt-6 flex items-center gap-2 text-xs uppercase tracking-[3px] text-stone hover:text-ink transition-colors"
+          aria-label="Go back to previous question"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back
+        </button>
+      )}
+
+      <h1 className="font-display text-[clamp(28px,3.5vw,42px)] mt-8">
         Find Your Ritual
       </h1>
-      <p className="text-sm text-stone mt-2">
+      <p className="text-sm text-walnut mt-2 mb-2">
         Answer five questions. Discover your perfect mask.
       </p>
 
-      {currentStep < 5 ? (
-        <QuizStep
-          question={STEPS[currentStep].question}
-          options={STEPS[currentStep].options}
-          onSelect={handleSelect}
-          selectedOption={answers[currentStep] ?? null}
-        />
-      ) : (
-        <QuizResult handle={recommendedHandle} />
-      )}
+      {/* Steps / Result */}
+      <div className="flex-1 flex flex-col justify-center">
+        {!isResult ? (
+          <div
+            key={currentStep}
+            className={`quiz-step-animate ${direction === 'forward' ? 'quiz-enter-right' : 'quiz-enter-left'}`}
+          >
+            <QuizStep
+              question={STEPS[currentStep].question}
+              options={STEPS[currentStep].options}
+              onSelect={handleSelect}
+              selectedOption={answers[currentStep] ?? null}
+              stepNumber={currentStep + 1}
+            />
+          </div>
+        ) : (
+          <div className="quiz-step-animate quiz-enter-right">
+            <QuizResult handle={recommendedHandle} onRestart={handleRestart} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
