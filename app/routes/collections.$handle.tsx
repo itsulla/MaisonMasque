@@ -10,7 +10,7 @@ interface LoaderData {
   handle: string;
 }
 
-const FORMATS = ['All', 'Sheet Mask', 'Hydrogel', 'Sleeping Mask', 'Wrapping Mask', 'Bundle'] as const;
+const FORMATS = ['All', 'Sheet Mask', 'Hydrogel', 'Overnight', 'Wrapping Mask', 'Elixir', 'Sunscreen', 'Bundle'] as const;
 type SortOption = 'featured' | 'price-asc' | 'price-desc';
 
 const GRADIENT_MAP: Record<string, string> = {
@@ -18,18 +18,36 @@ const GRADIENT_MAP: Record<string, string> = {
   '#D4BA7A': 'from-gold/20 to-ivory',
   '#8FA68E': 'from-sage/30 to-ivory',
   '#C5A55A': 'from-gold/20 to-ivory',
+  '#F5E6D0': 'from-[#F5E6D0]/30 to-ivory',
+  '#E8D5C4': 'from-[#E8D5C4]/30 to-ivory',
 };
+
+// Curated display order — interleaves categories for natural browsing
+const FEATURED_ORDER: string[] = [
+  'medicube-pdrn-gel-mask',        // Ritual I
+  'medicube-pdrn-peptide-serum',   // Elixir I (PDRN pairing)
+  'medicube-wrapping-mask',        // Ritual II
+  'anua-heartleaf-mask',           // Ritual III
+  'celdyque-pdrn-egf-serum',      // Elixir II
+  'numbuzin-no3-pore-mask',        // Ritual IV
+  'skin1004-centella-sleeping-pack', // Ritual V
+  'beauty-of-joseon-relief-sun',   // Morning Veil
+  'heimish-artless-glow-tinted-sunscreen',
+  'the-complete-ritual',           // Bundle last
+];
 
 export const meta: MetaFunction = ({params}) => {
   const handle = params.handle ?? 'all';
-  const title = handle === 'all'
-    ? 'All Masks | Maison Masque'
-    : handle === 'the-five-rituals'
-      ? 'The Five Rituals | Maison Masque'
-      : 'Collection | Maison Masque';
+  const titles: Record<string, string> = {
+    'all': 'All Products | Maison Masque',
+    'the-five-rituals': 'The Five Rituals | Maison Masque',
+    'morning-veil': 'The Morning Veil — Sun Protection | Maison Masque',
+    'elixirs': 'The Elixirs — PDRN Formulations | Maison Masque',
+  };
+  const title = titles[handle] ?? 'Collection | Maison Masque';
   return [
     {title},
-    {name: 'description', content: 'Shop curated Korean sheet masks at Maison Masque.'},
+    {name: 'description', content: 'Shop curated Korean skincare at Maison Masque.'},
   ];
 };
 
@@ -49,6 +67,14 @@ export default function CollectionRoute() {
     return <AllMasksPage ritualOnly />;
   }
 
+  if (handle === 'morning-veil') {
+    return <AllMasksPage collectionFilter="morning-veil" />;
+  }
+
+  if (handle === 'elixirs') {
+    return <AllMasksPage collectionFilter="elixir" />;
+  }
+
   // Fallback for unknown collections
   return (
     <div className="max-w-7xl mx-auto px-6 py-16 text-center">
@@ -66,25 +92,41 @@ export default function CollectionRoute() {
   );
 }
 
-function AllMasksPage({ritualOnly = false}: {ritualOnly?: boolean}) {
+function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: boolean; collectionFilter?: string}) {
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [sort, setSort] = useState<SortOption>('featured');
   const {addItem} = useCart();
 
-  const baseProducts = ritualOnly ? getRitualProducts() : allProducts;
+  const baseProducts = ritualOnly
+    ? getRitualProducts()
+    : collectionFilter
+      ? allProducts.filter((p) => p.collection === collectionFilter)
+      : allProducts;
 
   const filtered = useMemo(() => {
     let list = baseProducts;
     if (activeFilter !== 'All') {
-      list = list.filter((p) => p.format === activeFilter);
+      // "Sunscreen" matches "Sunscreen" and "Tinted Sunscreen"; "Overnight" matches "Sleeping Pack"
+      list = list.filter((p) =>
+        activeFilter === 'Sunscreen'
+          ? p.format.includes('Sunscreen')
+          : activeFilter === 'Overnight'
+            ? p.format.includes('Sleeping')
+            : p.format === activeFilter,
+      );
     }
     switch (sort) {
       case 'price-asc':
         return [...list].sort((a, b) => a.price - b.price);
       case 'price-desc':
         return [...list].sort((a, b) => b.price - a.price);
-      default:
-        return list;
+      default: {
+        // Featured: use curated interleaved order
+        const orderMap = new Map(FEATURED_ORDER.map((h, i) => [h, i]));
+        return [...list].sort((a, b) =>
+          (orderMap.get(a.handle) ?? 99) - (orderMap.get(b.handle) ?? 99),
+        );
+      }
     }
   }, [baseProducts, activeFilter, sort]);
 
@@ -107,10 +149,20 @@ function AllMasksPage({ritualOnly = false}: {ritualOnly?: boolean}) {
     [addItem],
   );
 
-  const pageTitle = ritualOnly ? 'The Five Rituals' : 'All Masks';
+  const pageTitle = ritualOnly
+    ? 'The Five Rituals'
+    : collectionFilter === 'morning-veil'
+      ? 'The Morning Veil'
+      : collectionFilter === 'elixir'
+        ? 'The Elixirs'
+        : 'All Products';
   const subtitle = ritualOnly
     ? 'Five masks. Five intentions.'
-    : 'Six ways to begin your ritual';
+    : collectionFilter === 'morning-veil'
+      ? 'Sun protection as the final step of your morning practice.'
+      : collectionFilter === 'elixir'
+        ? 'PDRN elixirs to amplify your ritual practice.'
+        : `${allProducts.length} ways to begin your ritual`;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -193,19 +245,21 @@ function AllMasksPage({ritualOnly = false}: {ritualOnly?: boolean}) {
                       color: `${product.heroColor}18`,
                     }}
                   >
-                    {product.ritualNumber ?? 'MM'}
+                    {product.ritualNumber
+                      ?? (product.collection === 'morning-veil' ? '☀'
+                        : product.collection === 'elixir' ? '✧'
+                          : 'MM')}
                   </span>
                 </div>
               </Link>
 
               {/* Content */}
               <div className="p-5">
-                {product.ritualNumber && (
+                {product.ritualNumber ? (
                   <p className="text-[11px] uppercase tracking-[4px] text-gold font-semibold">
                     Ritual {product.ritualNumber} &mdash; {product.ritualName}
                   </p>
-                )}
-                {!product.ritualNumber && (
+                ) : (
                   <p className="text-[11px] uppercase tracking-[4px] text-gold font-semibold">
                     {product.ritualName}
                   </p>

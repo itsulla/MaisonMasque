@@ -12,13 +12,14 @@ interface NavLinkItem {
 }
 
 const LEFT_LINKS: NavLinkItem[] = [
-  {label: 'The Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
-  {label: 'Skin Quiz', href: '/quiz'},
+  {label: 'The Five Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
+  {label: 'The Elixirs', href: '/collections/elixirs'},
+  {label: 'The Morning Veil', href: '/the-morning-veil'},
 ];
 
 const RIGHT_LINKS: NavLinkItem[] = [
-  {label: 'Subscribe', href: '#subscription', section: 'subscription'},
-  {label: 'Account', href: '/account'},
+  {label: 'The Complete Ritual', href: '/products/the-complete-ritual'},
+  {label: 'Skin Quiz', href: '/quiz'},
 ];
 
 export function Navigation() {

@@ -60,18 +60,18 @@ function getRecommendation(answers: Record<number, string>): string {
     return 'anua-heartleaf-mask';
   }
 
-  // Oily + Pores + Sheet mask → Ritual IV (Medicube Vita Coating)
+  // Oily + Pores + Sheet mask → Ritual IV (Numbuzin Pore Mask)
   if (skinType === 'Oily' || concern === 'Pores & texture') {
-    return 'medicube-vita-coating-mask';
+    return 'numbuzin-no3-pore-mask';
   }
 
-  // Combination + Dullness + Brightening → Ritual V (Laneige Cica)
+  // Combination + Dullness + Brightening → Ritual V (SKIN1004 Centella)
   if (
     skinType === 'Combination' ||
     concern === 'Dullness & uneven tone' ||
     goal === 'Brightening & glow'
   ) {
-    return 'laneige-cica-sleeping-mask';
+    return 'skin1004-centella-sleeping-pack';
   }
 
   // Dry + Dehydration + Deep hydration → Ritual I (Medicube PDRN Gel Mask)

@@ -13,9 +13,15 @@ export const meta: MetaFunction<typeof loader> = ({data, params}) => {
   const title = product
     ? `${product.name} by ${product.brand} | Maison Masque`
     : 'Product | Maison Masque';
+  const isMorningVeil = product?.collection === 'morning-veil';
+  const isElixir = product?.collection === 'elixir';
   const description = product
-    ? product.description
-    : 'Shop curated Korean sheet masks at Maison Masque.';
+    ? isMorningVeil
+      ? `${product.name} by ${product.brand} — Korean sunscreen SPF50+ PA++++. ${product.description}`
+      : isElixir
+        ? `${product.name} by ${product.brand} — Korean PDRN elixir. ${product.description}`
+        : product.description
+    : 'Shop curated Korean skincare at Maison Masque.';
   const canonicalUrl = `https://mask.lekker.design/products/${handle}`;
   const imageUrl = product?.image
     ? `https://mask.lekker.design${product.image}`
@@ -81,7 +87,11 @@ function ProductJsonLd({handle}: {handle: string}) {
         name: 'Maison Masque',
       },
     },
-    category: 'Beauty > Skincare > Face Masks',
+    category: product.collection === 'morning-veil'
+      ? 'Beauty > Skincare > Sunscreen'
+      : product.collection === 'elixir'
+        ? 'Beauty > Skincare > Serums'
+        : 'Beauty > Skincare > Face Masks',
     sku: product.handle,
   };
 
@@ -111,8 +121,16 @@ function ProductJsonLd({handle}: {handle: string}) {
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'The Five Rituals',
-        item: 'https://mask.lekker.design/collections/the-five-rituals',
+        name: product.collection === 'morning-veil'
+          ? 'The Morning Veil'
+          : product.collection === 'elixir'
+            ? 'The Elixirs'
+            : 'The Five Rituals',
+        item: product.collection === 'morning-veil'
+          ? 'https://mask.lekker.design/the-morning-veil'
+          : product.collection === 'elixir'
+            ? 'https://mask.lekker.design/collections/elixirs'
+            : 'https://mask.lekker.design/collections/the-five-rituals',
       },
       {
         '@type': 'ListItem',

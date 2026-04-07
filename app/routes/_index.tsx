@@ -7,6 +7,8 @@ import {RitualGuide} from '~/components/home/RitualGuide';
 import {Subscription} from '~/components/home/Subscription';
 import {TrustBar} from '~/components/shared/TrustBar';
 import {BundleBuilder} from '~/components/home/BundleBuilder';
+import {MorningVeilPromo} from '~/components/home/MorningVeilPromo';
+import {ElixirsPromo} from '~/components/home/ElixirsPromo';
 
 export const meta: MetaFunction = () => {
   return [
@@ -16,7 +18,7 @@ export const meta: MetaFunction = () => {
     {
       name: 'description',
       content:
-        'Curated Korean sheet masks from Medicube, Anua, and Laneige. Shipped worldwide to Australia, UK, Europe and South Africa.',
+        'Curated Korean sheet masks from Medicube, Anua, and SKIN1004. Shipped worldwide to Australia, UK, Europe and South Africa.',
     },
   ];
 };
@@ -27,7 +29,7 @@ const ORGANIZATION_JSON_LD = {
   name: 'Maison Masque',
   url: 'https://maisonmasque.com',
   description:
-    'Curated Korean sheet masks from Medicube, Anua, and Laneige. Sourced in Hong Kong, shipped worldwide.',
+    'Curated Korean sheet masks from Medicube, Anua, and SKIN1004. Sourced in Hong Kong, shipped worldwide.',
 };
 
 export default function Homepage() {
@@ -41,8 +43,10 @@ export default function Homepage() {
       <TrustBar />
       <Divider />
       <FiveRituals />
+      <ElixirsPromo />
       <Divider />
       <BundleBuilder />
+      <MorningVeilPromo />
       <Divider />
       <Philosophy />
       <Divider />

@@ -866,3 +866,26 @@ body::after {
 .pdp-placeholder-active .pdp-placeholder {
   display: flex !important;
 }
+
+/* ---- Cart gift tier animation ---- */
+
+@keyframes cartGiftIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: cartGiftIn 0.4s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in {
+    animation: none;
+  }
+}

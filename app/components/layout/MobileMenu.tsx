@@ -2,10 +2,11 @@ import {Link} from '@remix-run/react';
 import {useEffect, useRef, useCallback, useState} from 'react';
 
 const menuLinks = [
-  {label: 'The Rituals', href: '/collections/the-five-rituals'},
+  {label: 'The Five Rituals', href: '/collections/the-five-rituals'},
+  {label: 'The Elixirs', href: '/collections/elixirs'},
+  {label: 'The Morning Veil', href: '/the-morning-veil'},
+  {label: 'The Complete Ritual', href: '/products/the-complete-ritual'},
   {label: 'Skin Quiz', href: '/quiz'},
-  {label: 'Subscribe', href: '#subscription'},
-  {label: 'Account', href: '/account'},
 ];
 
 export function MobileMenu() {

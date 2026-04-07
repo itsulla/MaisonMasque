@@ -4,7 +4,7 @@ const MESSAGES = [
   {name: 'Sarah', city: 'Melbourne', product: 'Ritual I — Restore'},
   {name: 'Emma', city: 'London', product: 'Ritual III — Calm'},
   {name: 'Yuki', city: 'Tokyo', product: 'The Complete Ritual'},
-  {name: 'Chloé', city: 'Paris', product: 'Ritual IV — Illuminate'},
+  {name: 'Chloé', city: 'Paris', product: 'Ritual IV — Refine'},
   {name: 'Leah', city: 'Cape Town', product: 'Ritual II — Renew'},
   {name: 'Mia', city: 'Sydney', product: 'Ritual V — Soothe'},
 ];
