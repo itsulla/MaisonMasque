@@ -1,6 +1,6 @@
 import {RemixServer} from '@remix-run/react';
 import {isbot} from 'isbot';
-import {renderToString} from 'react-dom/server';
+import {renderToReadableStream} from 'react-dom/server';
 import type {EntryContext} from '@remix-run/server-runtime';
 
 export default async function handleRequest(
@@ -9,12 +9,24 @@ export default async function handleRequest(
   responseHeaders: Headers,
   remixContext: EntryContext,
 ) {
-  const markup = renderToString(
+  const body = await renderToReadableStream(
     <RemixServer context={remixContext} url={request.url} />,
+    {
+      signal: request.signal,
+      onError(error: unknown) {
+        console.error(error);
+        responseStatusCode = 500;
+      },
+    },
   );
 
+  // Wait for all content if the request is from a bot
+  if (isbot(request.headers.get('user-agent'))) {
+    await body.allReady;
+  }
+
   responseHeaders.set('Content-Type', 'text/html');
-  return new Response('<!DOCTYPE html>' + markup, {
+  return new Response(body, {
     headers: responseHeaders,
     status: responseStatusCode,
   });

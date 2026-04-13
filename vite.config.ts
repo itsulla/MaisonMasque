@@ -10,6 +10,11 @@ export default defineConfig({
       '~': path.resolve(__dirname, 'app'),
     },
   },
+  ssr: {
+    // Oxygen (Cloudflare Workers) has no node_modules at runtime —
+    // everything must be bundled into the worker output.
+    noExternal: true,
+  },
   plugins: [
     tailwindcss(),
     hydrogen(),
