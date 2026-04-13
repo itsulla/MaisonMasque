@@ -23,7 +23,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Deploy to Oxygen
-        run: npx shopify hydrogen deploy --no-verify --token "$SHOPIFY_HYDROGEN_FLAG_TOKEN" --storefront-id "1000127135"
+        run: npx shopify hydrogen deploy --no-verify --token "$SHOPIFY_HYDROGEN_FLAG_TOKEN"
         env:
           SHOPIFY_HYDROGEN_FLAG_TOKEN: ${{ secrets.OXYGEN_DEPLOYMENT_TOKEN }}
           SHOPIFY_FLAG_STORE: 0gk4tx-0x.myshopify.com
