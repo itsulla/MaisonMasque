@@ -8,11 +8,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'app'),
+      // Force the worker-compatible React DOM server renderer
+      'react-dom/server': 'react-dom/server.browser',
     },
   },
   ssr: {
-    // Oxygen (Cloudflare Workers) has no node_modules at runtime —
-    // everything must be bundled into the worker output.
     noExternal: true,
   },
   plugins: [
