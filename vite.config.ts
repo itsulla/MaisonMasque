@@ -12,6 +12,10 @@ export default defineConfig({
       'react-dom/server': 'react-dom/server.browser',
     },
   },
+  define: {
+    // Cloudflare Workers doesn't have Node.js `process` global
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
   ssr: {
     noExternal: true,
   },
