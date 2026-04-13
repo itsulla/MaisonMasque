@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "numbuzin-no3-pore-mask"
+    title: "No.3 Tingle-Pore Softening Sheet Mask"
+    vendor: "Numbuzin"
+    productType: "Sheet Mask"
+    descriptionHtml: "<p>The glass skin ritual. A tingling, pore-softening sheet mask that refines texture and tightens pores.</p><p><strong>Key Ingredients:</strong> 42% Bifida Ferment Lysate + 21% Galactomyces + AHA/BHA/PHA</p>"
+    tags: ["ritual", "sheet-mask", "pore-care", "glass-skin", "numbuzin", "Ritual IV", "Refine"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

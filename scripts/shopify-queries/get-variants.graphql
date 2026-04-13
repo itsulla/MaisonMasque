@@ -1,0 +1,20 @@
+{
+  products(first: 20) {
+    edges {
+      node {
+        id
+        handle
+        title
+        variants(first: 1) {
+          edges {
+            node {
+              id
+              price
+              compareAtPrice
+            }
+          }
+        }
+      }
+    }
+  }
+}

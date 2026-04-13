@@ -7,13 +7,15 @@ import {Price, PriceWithCompare} from '~/components/shared/Price';
 import {MorningVeilCrossSell} from '~/components/shared/MorningVeilCrossSell';
 import {ElixirCrossSell} from '~/components/shared/ElixirCrossSell';
 import {GiftTierNudge} from '~/components/shared/GiftTierNudge';
+import {RitualNumeral} from '~/components/shared/RitualNumeral';
+import {ProductBrandStory} from '~/components/product/ProductBrandStory';
 
 interface ProductPageProps {
   handle: string;
 }
 
 const SHIPPING_THRESHOLDS_USD: Record<string, number> = {
-  USD: 40, GBP: 45, AUD: 60, EUR: 45, ZAR: 750,
+  USD: 45, GBP: 36, AUD: 70, EUR: 42, ZAR: 820,
 };
 
 function getRate(currency: string): number {
@@ -43,7 +45,7 @@ const ELIXIR_PAIRINGS: Record<string, {pairings: {handle: string; label: string;
         copy: 'PDRN elixir meets PDRN mask.',
       },
       {
-        handle: 'anua-heartleaf-mask',
+        handle: 'abib-heartleaf-gummy-mask',
         label: 'Ritual III \u2014 Calm',
         copy: 'Regeneration meets calm.',
       },
@@ -78,11 +80,14 @@ const MORNING_VEIL_PAIRINGS: Record<string, {handle: string; label: string; copy
     copy: 'Morning protection meets evening renewal.',
   },
   'heimish-artless-glow-tinted-sunscreen': {
-    handle: 'anua-heartleaf-mask',
+    handle: 'abib-heartleaf-gummy-mask',
     label: 'Ritual III — Calm',
     copy: 'Morning radiance meets evening calm.',
   },
 };
+
+// PDRN Trio: Elixir III + Elixir I + Ritual I (all Medicube PDRN)
+const PDRN_TRIO_HANDLES = ['medicube-pdrn-milky-toner', 'medicube-pdrn-peptide-serum', 'medicube-pdrn-gel-mask'];
 
 export function ProductPage({handle}: ProductPageProps) {
   const product = getProductByHandle(handle);
@@ -114,11 +119,12 @@ export function ProductPage({handle}: ProductPageProps) {
   const isElixir = product.collection === 'elixir';
   const isRitualV = handle === 'skin1004-centella-sleeping-pack';
   const isRitualIV = handle === 'numbuzin-no3-pore-mask';
+  const isElixirIII = handle === 'medicube-pdrn-milky-toner';
   const pairing = isMorningVeil ? MORNING_VEIL_PAIRINGS[handle] : null;
   const pairingProduct = pairing ? getProductByHandle(pairing.handle) : null;
 
   // Shipping threshold check
-  const thresholdLocal = SHIPPING_THRESHOLDS_USD[currency] ?? 40;
+  const thresholdLocal = SHIPPING_THRESHOLDS_USD[currency] ?? 45;
   const thresholdUsd = thresholdLocal / getRate(currency);
   const cartPlusProduct = subtotal + product.price * qty;
   const hitsShipping = cartPlusProduct >= thresholdUsd;
@@ -246,13 +252,21 @@ export function ProductPage({handle}: ProductPageProps) {
           </p>
 
           {/* Product name */}
-          <h1 className="font-display text-[28px] text-ink mt-2 leading-snug">
+          <h1 className="font-display text-[28px] text-ink mt-2 leading-snug flex items-center gap-3">
             {product.name}
+            {isElixirIII && (
+              <span className="text-[9px] uppercase tracking-[2px] font-semibold text-gold border border-gold/40 rounded-full px-2.5 py-0.5 font-body whitespace-nowrap">
+                Trending
+              </span>
+            )}
           </h1>
 
           {/* Subtitle */}
           <p className="text-[13px] text-stone italic mt-1">
             {product.subtitle}
+            {isElixirIII && (
+              <span className="not-italic text-walnut"> &mdash; 5&times; the volume of our concentrated serums</span>
+            )}
           </p>
 
           {/* Price block */}
@@ -546,6 +560,66 @@ export function ProductPage({handle}: ProductPageProps) {
         </div>
       </div>
 
+      {/* ── PDRN TRIO (Elixir III page only) ── */}
+      {isElixirIII && (() => {
+        const trioProducts = PDRN_TRIO_HANDLES.map((h) => getProductByHandle(h)).filter(Boolean) as Product[];
+        const trioTotal = trioProducts.reduce((s, p) => s + p.price, 0);
+        return (
+          <div className="max-w-7xl mx-auto px-6 pb-8">
+            <div className="bg-ivory p-6 lg:p-8">
+              <p className="text-[11px] uppercase tracking-[4px] text-gold font-semibold">
+                Medicube PDRN
+              </p>
+              <h3 className="font-display text-xl mt-2">The PDRN Trio</h3>
+              <p className="text-[13px] text-walnut mt-2">
+                Three Medicube PDRN formats, one complete practice. Toner to prep, serum to treat, mask to seal.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5">
+                {trioProducts.map((p) => {
+                  const isCurrent = p.handle === handle;
+                  return (
+                    <div key={p.handle} className={`border ${isCurrent ? 'border-gold/40 bg-cream' : 'border-sand bg-cream'} p-4 text-center`}>
+                      {isCurrent && (
+                        <p className="text-[9px] uppercase tracking-[2px] text-gold font-semibold mb-2">
+                          You&apos;re viewing this
+                        </p>
+                      )}
+                      <p className="text-[10px] uppercase tracking-[2px] text-stone">{p.brand}</p>
+                      <h4 className="font-display text-sm mt-1">{p.ritualName || p.name}</h4>
+                      <Price amount={p.price} className="font-display text-sm mt-1 block" />
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-5 pt-4 border-t border-sand/60">
+                <div>
+                  <p className="text-sm text-ink">
+                    The PDRN Trio:{' '}
+                    <Price amount={trioTotal} className="font-display" />
+                  </p>
+                  <p className="text-[11px] text-gold mt-0.5">
+                    Includes both complimentary gifts at this total
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    for (const p of trioProducts) {
+                      addProductToCart(p);
+                    }
+                  }}
+                  className="flex-shrink-0 border border-sand text-ink text-[11px] uppercase tracking-[0.2em] font-semibold px-6 py-3 hover:border-gold hover:text-gold transition-colors"
+                >
+                  Add all three to cart
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* ── RITUAL IV PAIRING (Ritual IV page only) ── */}
       {isRitualIV && (() => {
         const paired = getProductByHandle(RITUAL_IV_PAIRING.handle);
@@ -652,8 +726,8 @@ export function ProductPage({handle}: ProductPageProps) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-px border border-sand bg-sand">
               {(handle === 'medicube-pdrn-peptide-serum'
-                ? ['medicube-pdrn-gel-mask', 'anua-heartleaf-mask', 'the-complete-ritual']
-                : ['medicube-pdrn-gel-mask', 'anua-heartleaf-mask', 'the-complete-ritual']
+                ? ['medicube-pdrn-gel-mask', 'abib-heartleaf-gummy-mask', 'the-complete-ritual']
+                : ['medicube-pdrn-gel-mask', 'abib-heartleaf-gummy-mask', 'the-complete-ritual']
               ).map((h) => {
                 const p = getProductByHandle(h);
                 if (!p) return null;
@@ -697,6 +771,9 @@ export function ProductPage({handle}: ProductPageProps) {
           </div>
         </section>
       )}
+
+      {/* ── BRAND STORY (rich marketing assets from the manufacturer) ── */}
+      <ProductBrandStory product={product} />
 
       {/* ── ELIXIR CROSS-SELL (ritual pages only) ── */}
       {!isMorningVeil && !isElixir && <ElixirCrossSell currentHandle={handle} />}
@@ -749,7 +826,7 @@ export function ProductPage({handle}: ProductPageProps) {
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-px border border-sand bg-sand">
-              {(['medicube-pdrn-gel-mask', 'anua-heartleaf-mask', 'the-complete-ritual'] as const).map((h) => {
+              {(['medicube-pdrn-gel-mask', 'abib-heartleaf-gummy-mask', 'the-complete-ritual'] as const).map((h) => {
                 const p = getProductByHandle(h);
                 if (!p) return null;
                 return (
@@ -856,8 +933,19 @@ function BundlePage({product}: {product: Product}) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 border border-sand">
           {includedProducts.map((p, i) => (
             <div key={p.handle} className={`p-6 text-center ${i < includedProducts.length - 1 ? 'border-r border-b md:border-b lg:border-b-0 border-sand' : ''}`}>
-              <div className="w-full aspect-square mb-4 flex items-center justify-center" style={{background: `radial-gradient(circle at 50% 40%, ${p.heroColor}18 0%, #FAF8F3 70%)`}}>
-                <span className="font-display text-6xl select-none" style={{color: `${p.heroColor}20`}}>{p.ritualNumber}</span>
+              <div className="product-tile-bg w-full aspect-square mb-4 flex items-center justify-center relative overflow-hidden">
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={`${p.brand} ${p.name} - Maison Masque`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span className="font-display text-6xl select-none" style={{color: `${p.heroColor}20`}}>{p.ritualNumber}</span>
+                )}
+                {p.ritualNumeral && <RitualNumeral numeral={p.ritualNumeral} />}
               </div>
               <p className="text-[11px] uppercase tracking-[4px] text-gold font-semibold">Ritual {p.ritualNumber}</p>
               <p className="text-[10px] uppercase tracking-[2px] text-stone mt-1">{p.brand}</p>

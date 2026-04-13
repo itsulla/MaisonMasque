@@ -1,0 +1,51 @@
+mutation {
+  p1: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498217214263"
+    variants: [{ id: "gid://shopify/ProductVariant/51956063535415", price: "22.00", compareAtPrice: "28.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p2: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498217607479"
+    variants: [{ id: "gid://shopify/ProductVariant/51956064321847", price: "26.00", compareAtPrice: "32.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p3: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498217902391"
+    variants: [{ id: "gid://shopify/ProductVariant/51956065665335", price: "28.00", compareAtPrice: "40.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p4: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498217935159"
+    variants: [{ id: "gid://shopify/ProductVariant/51956065730871", price: "22.00", compareAtPrice: "28.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p5: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498217967927"
+    variants: [{ id: "gid://shopify/ProductVariant/51956065861943", price: "20.00", compareAtPrice: "26.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p6: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498218033463"
+    variants: [{ id: "gid://shopify/ProductVariant/51956065993015", price: "22.00", compareAtPrice: "28.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p7: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498218066231"
+    variants: [{ id: "gid://shopify/ProductVariant/51956066255159", price: "18.00", compareAtPrice: "24.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p8: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498218131767"
+    variants: [{ id: "gid://shopify/ProductVariant/51956066418999", price: "24.00", compareAtPrice: "32.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p9: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498220523831"
+    variants: [{ id: "gid://shopify/ProductVariant/51956072579383", price: "20.00", compareAtPrice: "26.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+
+  p10: productVariantsBulkUpdate(
+    productId: "gid://shopify/Product/10498220589367"
+    variants: [{ id: "gid://shopify/ProductVariant/51956072743223", price: "22.00", compareAtPrice: "28.00" }]
+  ) { productVariants { id price compareAtPrice } userErrors { field message } }
+}

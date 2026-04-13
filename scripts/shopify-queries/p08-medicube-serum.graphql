@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "medicube-pdrn-peptide-serum"
+    title: "Elixir I — Regenerate"
+    vendor: "Medicube"
+    productType: "Elixir"
+    descriptionHtml: "<p>A lightweight elixir delivering clinic-grade PDRN deep into the skin. Five-peptide complex, niacinamide and adenosine firm, brighten and smooth.</p><p><strong>Key Ingredients:</strong> Salmon PDRN + 5-Peptide Complex + Niacinamide + Adenosine</p>"
+    tags: ["elixir", "pdrn", "serum", "medicube", "Elixir I", "Regenerate"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "celdyque-pdrn-egf-serum"
+    title: "Elixir II — Fortify"
+    vendor: "CELDYQUE"
+    productType: "Elixir"
+    descriptionHtml: "<p>Our most potent elixir. 120,000 ppm PDRN paired with EGF, Volufiline and a multi-peptide complex for intensive regeneration.</p><p><strong>Key Ingredients:</strong> 12% PDRN Complex + EGF + Volufiline + Multi-Peptides</p>"
+    tags: ["elixir", "pdrn", "serum", "egf", "volufiline", "celdyque", "Elixir II", "Fortify"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

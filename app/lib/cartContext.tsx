@@ -1,15 +1,28 @@
-import {createContext, useContext, useState, useCallback, useMemo, useEffect} from 'react';
+import {createContext, useContext, useState, useCallback, useMemo, useEffect, useRef} from 'react';
+import {
+  createCart,
+  addCartLines,
+  updateCartLines,
+  removeCartLines,
+  getCart,
+  getVariantId,
+  parseShopifyCart,
+  type ShopifyCartLine,
+} from '~/lib/shopifyCart';
 import {getRitualByHandle} from '~/lib/ritualConfig';
 
-export interface CartLine {
-  id: string;
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface BundleSelectedItem {
   handle: string;
   title: string;
   vendor: string;
-  quantity: number;
-  price: {amount: string; currencyCode: string};
-  image?: {url: string; altText: string | null} | null;
+}
+
+export interface CartLine extends ShopifyCartLine {
   ritualLabel?: string;
+  bundleHandle?: string;
+  selectedItems?: BundleSelectedItem[];
 }
 
 interface CartContextValue {
@@ -17,7 +30,9 @@ interface CartContextValue {
   itemCount: number;
   subtotal: number;
   currencyCode: string;
+  checkoutUrl: string;
   isOpen: boolean;
+  loading: boolean;
   open: () => void;
   close: () => void;
   addItem: (product: any, qty?: number) => void;
@@ -25,94 +40,163 @@ interface CartContextValue {
   removeItem: (id: string) => void;
 }
 
-const STORAGE_KEY = 'mm_cart';
+// ── LocalStorage for cart ID persistence ─────────────────────────────────────
 
-function loadCart(): CartLine[] {
-  if (typeof window === 'undefined') return [];
+const CART_ID_KEY = 'mm_cart_id';
+
+function getSavedCartId(): string | null {
+  if (typeof window === 'undefined') return null;
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    return localStorage.getItem(CART_ID_KEY);
   } catch {
-    return [];
+    return null;
   }
 }
 
-function saveCart(lines: CartLine[]) {
+function saveCartId(id: string) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+    localStorage.setItem(CART_ID_KEY, id);
   } catch {
-    // quota exceeded or unavailable
+    // quota or unavailable
   }
 }
+
+function clearCartId() {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(CART_ID_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+// ── Provider ─────────────────────────────────────────────────────────────────
 
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({children}: {children: React.ReactNode}) {
   const [lines, setLines] = useState<CartLine[]>([]);
+  const [checkoutUrl, setCheckoutUrl] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const cartIdRef = useRef<string | null>(null);
 
-  // Load from localStorage on mount
+  // Hydrate: load existing cart from Shopify on mount
   useEffect(() => {
-    setLines(loadCart());
-    setHydrated(true);
+    const savedId = getSavedCartId();
+    if (!savedId) return;
+
+    cartIdRef.current = savedId;
+    getCart(savedId).then((cart) => {
+      if (!cart || cart.totalQuantity === 0) {
+        // Cart expired or empty — clear it
+        clearCartId();
+        cartIdRef.current = null;
+        return;
+      }
+      syncFromShopify(cart);
+    }).catch(() => {
+      clearCartId();
+      cartIdRef.current = null;
+    });
   }, []);
 
-  // Persist to localStorage on change (after hydration)
-  useEffect(() => {
-    if (hydrated) saveCart(lines);
-  }, [lines, hydrated]);
+  // Sync local state from Shopify cart response
+  function syncFromShopify(cart: any) {
+    const parsed = parseShopifyCart(cart);
+    const enriched: CartLine[] = parsed.lines.map((line) => {
+      const ritual = getRitualByHandle(line.handle);
+      return {
+        ...line,
+        ritualLabel: ritual ? `Ritual ${ritual.numeral} — ${ritual.name}` : undefined,
+      };
+    });
+    setLines(enriched);
+    setCheckoutUrl(parsed.checkoutUrl);
+    if (cart.id) {
+      cartIdRef.current = cart.id;
+      saveCartId(cart.id);
+    }
+  }
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  const addItem = useCallback((product: any, qty = 1) => {
-    setLines((prev) => {
-      const existing = prev.find((l) => l.handle === product.handle);
-      if (existing) {
-        return prev.map((l) =>
-          l.handle === product.handle
-            ? {...l, quantity: l.quantity + qty}
-            : l,
-        );
-      }
-      const ritual = getRitualByHandle(product.handle);
-      const ritualLabel = ritual
-        ? `Ritual ${ritual.numeral} — ${ritual.name}`
-        : undefined;
-      return [
-        ...prev,
-        {
-          id: product.id ?? product.handle,
-          handle: product.handle,
-          title: product.title,
-          vendor: product.vendor,
-          quantity: qty,
-          price: product.priceRange?.minVariantPrice ?? {
-            amount: '0',
-            currencyCode: 'USD',
-          },
-          image: product.featuredImage,
-          ritualLabel,
-        },
-      ];
-    });
-    setIsOpen(true);
-  }, []);
+  const addItem = useCallback(async (product: any, qty = 1) => {
+    const variantId = getVariantId(product.handle);
+    if (!variantId) {
+      console.error(`No variant ID for handle: ${product.handle}`);
+      return;
+    }
 
-  const updateQuantity = useCallback((id: string, qty: number) => {
-    if (qty <= 0) {
-      setLines((prev) => prev.filter((l) => l.id !== id));
-    } else {
-      setLines((prev) =>
-        prev.map((l) => (l.id === id ? {...l, quantity: qty} : l)),
-      );
+    setLoading(true);
+    try {
+      const lineInput = {merchandiseId: variantId, quantity: qty};
+      let cart;
+
+      if (cartIdRef.current) {
+        // Add to existing cart
+        cart = await addCartLines(cartIdRef.current, [lineInput]);
+      } else {
+        // Create new cart with this item
+        cart = await createCart([lineInput]);
+      }
+
+      if (cart) {
+        syncFromShopify(cart);
+      }
+    } catch (err) {
+      console.error('Failed to add item:', err);
+    } finally {
+      setLoading(false);
+      setIsOpen(true);
     }
   }, []);
 
-  const removeItem = useCallback((id: string) => {
-    setLines((prev) => prev.filter((l) => l.id !== id));
+  const updateQuantity = useCallback(async (lineId: string, qty: number) => {
+    if (!cartIdRef.current) return;
+
+    setLoading(true);
+    try {
+      let cart;
+      if (qty <= 0) {
+        cart = await removeCartLines(cartIdRef.current, [lineId]);
+      } else {
+        cart = await updateCartLines(cartIdRef.current, [{id: lineId, quantity: qty}]);
+      }
+      if (cart) {
+        syncFromShopify(cart);
+        if (cart.totalQuantity === 0) {
+          clearCartId();
+          cartIdRef.current = null;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to update quantity:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const removeItem = useCallback(async (lineId: string) => {
+    if (!cartIdRef.current) return;
+
+    setLoading(true);
+    try {
+      const cart = await removeCartLines(cartIdRef.current, [lineId]);
+      if (cart) {
+        syncFromShopify(cart);
+        if (cart.totalQuantity === 0) {
+          clearCartId();
+          cartIdRef.current = null;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to remove item:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   const itemCount = useMemo(
@@ -121,11 +205,7 @@ export function CartProvider({children}: {children: React.ReactNode}) {
   );
 
   const subtotal = useMemo(
-    () =>
-      lines.reduce(
-        (sum, l) => sum + parseFloat(l.price.amount) * l.quantity,
-        0,
-      ),
+    () => lines.reduce((sum, l) => sum + parseFloat(l.price.amount) * l.quantity, 0),
     [lines],
   );
 
@@ -137,14 +217,16 @@ export function CartProvider({children}: {children: React.ReactNode}) {
       itemCount,
       subtotal,
       currencyCode,
+      checkoutUrl,
       isOpen,
+      loading,
       open,
       close,
       addItem,
       updateQuantity,
       removeItem,
     }),
-    [lines, itemCount, subtotal, currencyCode, isOpen, open, close, addItem, updateQuantity, removeItem],
+    [lines, itemCount, subtotal, currencyCode, checkoutUrl, isOpen, loading, open, close, addItem, updateQuantity, removeItem],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
@@ -154,4 +236,39 @@ export function useCart() {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error('useCart must be used within CartProvider');
   return ctx;
+}
+
+// ── Fulfillment helper (kept for future 3PL integration) ─────────────────────
+
+export interface FulfillmentSku {
+  handle: string;
+  title: string;
+  vendor: string;
+  quantity: number;
+  fromBundle?: string;
+}
+
+export function flattenCartForFulfillment(lines: CartLine[]): FulfillmentSku[] {
+  const skus: FulfillmentSku[] = [];
+  for (const line of lines) {
+    if (line.bundleHandle && line.selectedItems && line.selectedItems.length > 0) {
+      for (const item of line.selectedItems) {
+        skus.push({
+          handle: item.handle,
+          title: item.title,
+          vendor: item.vendor,
+          quantity: line.quantity,
+          fromBundle: line.bundleHandle,
+        });
+      }
+    } else {
+      skus.push({
+        handle: line.handle,
+        title: line.title,
+        vendor: line.vendor,
+        quantity: line.quantity,
+      });
+    }
+  }
+  return skus;
 }

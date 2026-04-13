@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "skin1004-centella-sleeping-pack"
+    title: "Madagascar Centella Hyalu-Cica Sleeping Pack"
+    vendor: "SKIN1004"
+    productType: "Sleeping Pack"
+    descriptionHtml: "<p>An overnight ceremony of repair. 40.9% Madagascar Centella Asiatica and triple hyaluronic acid complex calm, hydrate, and rebuild.</p><p><strong>Key Ingredients:</strong> Madagascar Centella Asiatica + Triple Hyaluronic Acid + Melatonin</p>"
+    tags: ["ritual", "sleeping-pack", "overnight", "centella", "skin1004", "Ritual V", "Soothe"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

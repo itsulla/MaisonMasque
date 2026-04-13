@@ -57,7 +57,7 @@ function getRecommendation(answers: Record<number, string>): string {
     concern === 'Redness & irritation' ||
     goal === 'Calming & soothing'
   ) {
-    return 'anua-heartleaf-mask';
+    return 'abib-heartleaf-gummy-mask';
   }
 
   // Oily + Pores + Sheet mask → Ritual IV (Numbuzin Pore Mask)

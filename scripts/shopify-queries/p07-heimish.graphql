@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "heimish-artless-glow-tinted-sunscreen"
+    title: "Artless Glow Base"
+    vendor: "Heimish"
+    productType: "Sunscreen"
+    descriptionHtml: "<p>A luminous makeup base with built-in sun protection. Natural pearl delivers a soft, dewy glow. SPF50+ PA++++.</p><p><strong>Key Ingredients:</strong> Pearl Complex + Rosehip + Thyme + Chemical UV Filters</p>"
+    tags: ["morning-veil", "sunscreen", "spf", "glow-primer", "heimish", "Morning Veil"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

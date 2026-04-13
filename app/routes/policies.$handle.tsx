@@ -98,7 +98,7 @@ const POLICIES: Record<string, {title: string; sections: {heading: string; body:
       },
       {
         heading: 'Complimentary Shipping',
-        body: 'We offer complimentary standard shipping on orders over the following thresholds: Australia A$60, United Kingdom £35, European Union €50, South Africa R750, United States $45.',
+        body: 'We offer complimentary standard shipping on orders over the following thresholds: Australia A$70, New Zealand NZ$75, Canada CA$62, United Kingdom \u00A336, European Union \u20AC42, UAE AED 165, United States $45. Orders below these thresholds carry a flat-rate shipping fee of $6.99 USD. Malaysia, Thailand, Singapore and Hong Kong orders enjoy complimentary shipping on all orders.',
       },
       {
         heading: 'Customs & Duties',
@@ -137,7 +137,7 @@ export default function PolicyRoute() {
   if (!policy) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
+    <div className="max-w-3xl mx-auto px-6 pt-24 pb-16">
       {/* Breadcrumb */}
       <nav className="text-xs text-stone mb-8" aria-label="Breadcrumb">
         <Link to="/" className="hover:text-gold transition-colors">Home</Link>

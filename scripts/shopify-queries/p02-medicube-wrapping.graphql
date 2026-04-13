@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "medicube-wrapping-mask"
+    title: "Collagen Night Wrapping Mask"
+    vendor: "Medicube"
+    productType: "Wrapping Mask"
+    descriptionHtml: "<p>Apply as a clear gel. It dries to a weightless film that wraps your skin in collagen while you sleep. Peel away in the morning to reveal plumper, firmer skin.</p><p><strong>Key Ingredients:</strong> Hydrolysed Collagen + Ceramide NP + Adenosine</p>"
+    tags: ["ritual", "wrapping-mask", "collagen", "overnight", "medicube", "Ritual II", "Renew"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

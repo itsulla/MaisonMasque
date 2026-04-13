@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "abib-heartleaf-gummy-mask"
+    title: "Heartleaf Gummy Sheet Mask"
+    vendor: "Abib"
+    productType: "Sheet Mask"
+    descriptionHtml: "<p>A high-adhesion microfibre sheet steeped in heartleaf extract and Micro TECA cica complex. The gummy-textured sheet clings to every curve of the face for a fresh, non-sticky, long-lasting calm.</p><p><strong>Key Ingredients:</strong> Heartleaf + Micro TECA Cica Complex</p>"
+    tags: ["ritual", "sheet-mask", "heartleaf", "cica", "calming", "abib", "Ritual III", "Calm"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

@@ -4,6 +4,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   type MetaFunction,
 } from '@remix-run/react';
 import {AnnouncementBar} from '~/components/layout/AnnouncementBar';
@@ -11,6 +12,7 @@ import {Navigation} from '~/components/layout/Navigation';
 import {Footer} from '~/components/layout/Footer';
 import {CartDrawer} from '~/components/layout/CartDrawer';
 import {MobileMenu} from '~/components/layout/MobileMenu';
+import {BottomNav} from '~/components/layout/BottomNav';
 import {ScrollProgress} from '~/components/shared/ScrollProgress';
 import {EmailPopup} from '~/components/shared/EmailPopup';
 import {BackToTop} from '~/components/shared/BackToTop';
@@ -92,7 +94,11 @@ export function HydrateFallback() {
   );
 }
 
+const DARK_THEME_ROUTES = new Set<string>(['/philosophy']);
+
 function AppShell() {
+  const location = useLocation();
+  const theme: 'light' | 'dark' = DARK_THEME_ROUTES.has(location.pathname) ? 'dark' : 'light';
   return (
     <>
       <a href="#main-content" className="skip-to-content">
@@ -100,13 +106,14 @@ function AppShell() {
       </a>
       <ScrollProgress />
       <AnnouncementBar />
-      <Navigation />
+      <Navigation theme={theme} />
       <MobileMenu />
       <CartDrawer />
-      <main id="main-content">
+      <main id="main-content" className="pb-20 md:pb-0">
         <Outlet />
       </main>
-      <Footer />
+      <Footer theme={theme} />
+      <BottomNav />
       <EmailPopup />
       <SocialProofToast />
       <BackToTop />
@@ -115,6 +122,8 @@ function AppShell() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const isDark = DARK_THEME_ROUTES.has(location.pathname);
   return (
     <html lang="en">
       <head>
@@ -123,7 +132,10 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-cream text-ink font-body antialiased">
+      <body
+        className={`font-body antialiased ${isDark ? 'text-cream' : 'bg-cream text-ink'}`}
+        style={isDark ? {backgroundColor: '#2C2722'} : undefined}
+      >
         <CurrencyProvider>
           <CartProvider>
             <AppShell />

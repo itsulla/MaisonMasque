@@ -1,4 +1,5 @@
-import {getElixirProducts, type Product} from '~/lib/products';
+import {Link} from '@remix-run/react';
+import {getElixirProducts, getProductByHandle, type Product} from '~/lib/products';
 import {useCart} from '~/lib/cartContext';
 import {useCurrency} from '~/lib/currencyContext';
 import {Price} from '~/components/shared/Price';
@@ -9,7 +10,7 @@ const GRADIENT_MAP: Record<string, string> = {
 };
 
 const SHIPPING_THRESHOLDS_USD: Record<string, number> = {
-  USD: 40, GBP: 45, AUD: 60, EUR: 45, ZAR: 750,
+  USD: 45, GBP: 36, AUD: 70, EUR: 42, ZAR: 820,
 };
 
 function getRate(currency: string): number {
@@ -17,21 +18,19 @@ function getRate(currency: string): number {
   return rates[currency] ?? 1;
 }
 
-// Elixir I is a PDRN pairing with Ritual I
-const PDRN_PAIRING_HANDLE = 'medicube-pdrn-peptide-serum';
 const PDRN_RITUAL_HANDLE = 'medicube-pdrn-gel-mask';
+const PDRN_TRIO_HANDLES = ['medicube-pdrn-milky-toner', 'medicube-pdrn-peptide-serum', 'medicube-pdrn-gel-mask'];
 
 interface ElixirCrossSellProps {
-  /** The handle of the current product page, used to detect Ritual I for featured pairing */
   currentHandle?: string;
 }
 
 export function ElixirCrossSell({currentHandle}: ElixirCrossSellProps) {
   const elixirProducts = getElixirProducts();
   const {addItem, subtotal} = useCart();
-  const {currency, format} = useCurrency();
+  const {currency} = useCurrency();
 
-  const thresholdUsd = (SHIPPING_THRESHOLDS_USD[currency] ?? 40) / getRate(currency);
+  const thresholdUsd = (SHIPPING_THRESHOLDS_USD[currency] ?? 45) / getRate(currency);
   const isRitualOne = currentHandle === PDRN_RITUAL_HANDLE;
 
   const handleAdd = (product: Product) => {
@@ -44,6 +43,10 @@ export function ElixirCrossSell({currentHandle}: ElixirCrossSellProps) {
       priceRange: {minVariantPrice: {amount: product.price.toFixed(2), currencyCode: product.currency}},
     });
   };
+
+  if (isRitualOne) {
+    return <PDRNTrioCrossSell handleAdd={handleAdd} />;
+  }
 
   return (
     <section className="border-t border-sand pt-12 pb-16 lg:pt-20 lg:pb-20 px-6" aria-label="The Elixirs">
@@ -61,29 +64,28 @@ export function ElixirCrossSell({currentHandle}: ElixirCrossSellProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {elixirProducts.map((product) => {
             const gradient = GRADIENT_MAP[product.heroColor] ?? 'from-sand/30 to-ivory';
             const cartPlusThis = subtotal + product.price;
             const addsShipping = subtotal > 0 && subtotal < thresholdUsd && cartPlusThis >= thresholdUsd;
-            const isFeatured = isRitualOne && product.handle === PDRN_PAIRING_HANDLE;
 
             return (
-              <div
-                key={product.handle}
-                className={`border ${isFeatured ? 'border-gold border-2' : 'border-sand'} relative`}
-              >
-                {/* PDRN pairing badge */}
-                {isFeatured && (
-                  <div className="absolute top-3 left-3 z-10 bg-gold text-ink text-[9px] uppercase tracking-[2px] font-semibold px-2.5 py-1">
-                    PDRN pairing
-                  </div>
-                )}
-
-                <div className={`h-[200px] bg-gradient-to-b ${gradient} flex items-center justify-center`}>
-                  <span className="font-display text-6xl select-none" style={{color: `${product.heroColor}28`}}>
-                    ✧
-                  </span>
+              <div key={product.handle} className="border border-sand">
+                <div className={`h-[200px] bg-gradient-to-b ${gradient} flex items-center justify-center overflow-hidden`}>
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={`${product.brand} ${product.name} - Maison Masque`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="font-display text-6xl select-none" style={{color: `${product.heroColor}28`}}>
+                      ✧
+                    </span>
+                  )}
                 </div>
 
                 <div className="p-5">
@@ -97,15 +99,6 @@ export function ElixirCrossSell({currentHandle}: ElixirCrossSellProps) {
 
                   <Price amount={product.price} className="font-display text-lg mt-3 block" />
 
-                  {/* Featured pairing combined price */}
-                  {isFeatured && (
-                    <p className="text-[11px] text-walnut mt-1">
-                      Elixir I + Ritual I:{' '}
-                      <Price amount={product.price + 22} className="font-display text-ink" />
-                      <span className="text-gold ml-1">&middot; Complimentary shipping</span>
-                    </p>
-                  )}
-
                   <button
                     type="button"
                     onClick={() => handleAdd(product)}
@@ -115,7 +108,7 @@ export function ElixirCrossSell({currentHandle}: ElixirCrossSellProps) {
                     Add to order
                   </button>
 
-                  {addsShipping && !isFeatured && (
+                  {addsShipping && (
                     <p className="text-[11px] text-gold mt-2 text-center">
                       Adds complimentary shipping to your order
                     </p>
@@ -125,6 +118,170 @@ export function ElixirCrossSell({currentHandle}: ElixirCrossSellProps) {
             );
           })}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function PDRNTrioCrossSell({handleAdd}: {handleAdd: (p: Product) => void}) {
+  const trioProducts = PDRN_TRIO_HANDLES.map((h) => getProductByHandle(h)).filter(Boolean) as Product[];
+  const trioTotal = trioProducts.reduce((s, p) => s + p.price, 0);
+  const elixirIII = getProductByHandle('medicube-pdrn-milky-toner');
+  const elixirI = getProductByHandle('medicube-pdrn-peptide-serum');
+  const elixirII = getProductByHandle('celdyque-pdrn-egf-serum');
+  const featuredElixirs = [elixirIII, elixirI].filter(Boolean) as Product[];
+
+  const addAllThree = () => {
+    for (const p of trioProducts) handleAdd(p);
+  };
+
+  return (
+    <section className="border-t border-sand pt-12 pb-16 lg:pt-20 lg:pb-20 px-6" aria-label="The PDRN Trio">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <p className="text-[11px] uppercase tracking-[4px] text-gold font-semibold">
+            Complete the PDRN practice
+          </p>
+          <h2 className="font-display text-[clamp(22px,3vw,32px)] mt-3">
+            The PDRN Trio
+          </h2>
+          <p className="text-sm text-walnut mt-3 max-w-lg mx-auto leading-relaxed">
+            This mask is the final step. Start with the toner, amplify with the
+            serum, seal with the mask.
+          </p>
+        </div>
+
+        {/* Featured elixirs — Elixir III + Elixir I */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+          {featuredElixirs.map((product, i) => {
+            const gradient = GRADIENT_MAP[product.heroColor] ?? 'from-sand/30 to-ivory';
+            const stepLabel = i === 0 ? 'Step 1 — Prep' : 'Step 2 — Amplify';
+
+            return (
+              <div key={product.handle} className="border-2 border-gold relative">
+                <div className="absolute top-3 left-3 z-10 bg-gold text-ink text-[9px] uppercase tracking-[2px] font-semibold px-2.5 py-1">
+                  {stepLabel}
+                </div>
+
+                <div className={`h-[220px] bg-gradient-to-b ${gradient} flex items-center justify-center overflow-hidden`}>
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={`${product.brand} ${product.name} - Maison Masque`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="font-display text-7xl select-none" style={{color: `${product.heroColor}28`}}>
+                      ✧
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-5">
+                  <p className="text-[10px] uppercase tracking-[2px] text-stone">
+                    {product.brand}
+                  </p>
+                  <h3 className="font-display text-[17px] font-medium mt-1">
+                    <Link to={`/products/${product.handle}`} className="hover:text-gold transition-colors">
+                      {product.name}
+                    </Link>
+                  </h3>
+                  <p className="text-xs text-walnut mt-1.5 leading-relaxed line-clamp-2">
+                    {product.description}
+                  </p>
+
+                  <div className="flex items-baseline gap-2 mt-3">
+                    {product.compareAtPrice > product.price && (
+                      <Price amount={product.compareAtPrice} className="font-display text-sm text-stone line-through" />
+                    )}
+                    <Price amount={product.price} className="font-display text-lg" />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAdd(product)}
+                    className="w-full mt-4 border border-gold text-gold text-[11px] uppercase tracking-[0.2em] font-semibold py-3 hover:bg-gold hover:text-ink transition-colors"
+                    aria-label={`Add ${product.name} to order`}
+                  >
+                    Add to order
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Trio total + Add all CTA */}
+        <div className="text-center py-6 border border-gold bg-[rgba(197,165,90,0.04)]">
+          <p className="text-[13px] text-walnut">
+            Elixir III (toner) + Elixir I (serum) + Ritual I (this mask) &mdash;{' '}
+            <Price amount={trioTotal} className="font-display text-ink text-base" /> total
+          </p>
+          <p className="text-[11px] text-gold mt-1">Complimentary shipping &middot; Includes complimentary gifts</p>
+          <button
+            type="button"
+            onClick={addAllThree}
+            className="mt-4 bg-ink text-cream text-[11px] uppercase tracking-[0.2em] font-semibold px-10 py-3.5 hover:bg-espresso transition-colors"
+          >
+            Add the PDRN Trio to cart
+          </button>
+        </div>
+
+        {/* Also in The Elixirs — Elixir II */}
+        {elixirII && (
+          <div className="mt-10">
+            <p className="text-[11px] uppercase tracking-[4px] text-stone font-semibold text-center mb-5">
+              Also in The Elixirs
+            </p>
+            <div className="max-w-sm mx-auto border border-sand">
+              <div className={`h-[160px] bg-gradient-to-b ${GRADIENT_MAP[elixirII.heroColor] ?? 'from-sand/30 to-ivory'} flex items-center justify-center overflow-hidden`}>
+                {elixirII.image ? (
+                  <img
+                    src={elixirII.image}
+                    alt={`${elixirII.brand} ${elixirII.name} - Maison Masque`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span className="font-display text-5xl select-none" style={{color: `${elixirII.heroColor}28`}}>
+                    ✧
+                  </span>
+                )}
+              </div>
+              <div className="p-5 text-center">
+                <p className="text-[10px] uppercase tracking-[2px] text-stone">
+                  {elixirII.brand}
+                </p>
+                <h3 className="font-display text-base mt-1">
+                  <Link to={`/products/${elixirII.handle}`} className="hover:text-gold transition-colors">
+                    {elixirII.name}
+                  </Link>
+                </h3>
+                <p className="text-xs text-walnut mt-1.5 leading-relaxed">
+                  12% PDRN concentration &mdash; the highest in our collection.
+                </p>
+                <div className="flex items-baseline justify-center gap-2 mt-3">
+                  {elixirII.compareAtPrice > elixirII.price && (
+                    <Price amount={elixirII.compareAtPrice} className="font-display text-sm text-stone line-through" />
+                  )}
+                  <Price amount={elixirII.price} className="font-display text-lg" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleAdd(elixirII)}
+                  className="mt-4 border border-sand text-ink text-[11px] uppercase tracking-[0.2em] font-semibold px-8 py-3 hover:border-gold hover:text-gold transition-colors"
+                  aria-label={`Add ${elixirII.name} to order`}
+                >
+                  Add to order
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

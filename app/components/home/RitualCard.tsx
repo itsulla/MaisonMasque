@@ -1,12 +1,14 @@
 import {Link} from '@remix-run/react';
-import {useRef, useCallback, useState} from 'react';
+import {useRef, useCallback} from 'react';
 import {type Product} from '~/lib/products';
 import {Price} from '~/components/shared/Price';
+import {RitualNumeral} from '~/components/shared/RitualNumeral';
 
 interface RitualCardProps {
   product: Product;
   index: number;
   className?: string;
+  ritualNumeral?: string;
   onQuickView?: (product: Product) => void;
   onAddToCart?: (product: Product) => void;
 }
@@ -19,18 +21,9 @@ const DRIFT_DIRECTIONS = [
   'translate(-4px, -8px)',
 ];
 
-const GRADIENT_MAP: Record<string, string> = {
-  '#C9928A': 'from-rose/30 to-ivory',
-  '#D4BA7A': 'from-gold/20 to-ivory',
-  '#8FA68E': 'from-sage/30 to-ivory',
-  '#C5A55A': 'from-gold/20 to-ivory',
-};
-
-export function RitualCard({product, index, className = '', onQuickView, onAddToCart}: RitualCardProps) {
+export function RitualCard({product, index, className = '', ritualNumeral, onQuickView, onAddToCart}: RitualCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const drift = DRIFT_DIRECTIONS[index % DRIFT_DIRECTIONS.length];
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const gradient = GRADIENT_MAP[product.heroColor] ?? 'from-sand/30 to-ivory';
   const hasCompare = product.compareAtPrice > product.price;
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -56,7 +49,7 @@ export function RitualCard({product, index, className = '', onQuickView, onAddTo
     >
       {/* Image area — links to PDP */}
       <Link to={`/products/${product.handle}`} className="block">
-        <div className={`ritual-img h-[280px] overflow-hidden relative ${product.image && !imageLoaded ? 'ritual-img-shimmer' : ''}`}>
+        <div className="ritual-img product-tile-bg h-[280px] overflow-hidden relative">
           <div
             className="ritual-img-inner w-full h-full transition-transform duration-[3000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform group-hover:scale-[1.05]"
             style={{['--drift' as string]: drift}}
@@ -65,19 +58,12 @@ export function RitualCard({product, index, className = '', onQuickView, onAddTo
               <img
                 src={product.image}
                 alt={`${product.brand} ${product.name} - Korean Sheet Mask - Maison Masque`}
-                className="w-full h-full object-cover transition-opacity duration-[400ms] ease-in-out"
-                style={{opacity: imageLoaded ? 1 : 0}}
+                className="w-full h-full object-cover"
                 loading="lazy"
                 decoding="async"
-                onLoad={() => setImageLoaded(true)}
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                }}
               />
-            ) : null}
-            {/* Gradient fallback (always rendered, hidden behind image when loaded) */}
-            {(!product.image || !imageLoaded) && (
-              <div className={`absolute inset-0 bg-gradient-to-b ${gradient} flex items-center justify-center`}>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
                 <span className="font-display text-7xl text-sand/60 select-none">
                   {product.ritualNumber ?? ''}
                 </span>
@@ -85,6 +71,7 @@ export function RitualCard({product, index, className = '', onQuickView, onAddTo
             )}
           </div>
           <div className="ritual-img-overlay" aria-hidden="true" />
+          {ritualNumeral && <RitualNumeral numeral={ritualNumeral} />}
         </div>
       </Link>
 

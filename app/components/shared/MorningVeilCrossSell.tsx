@@ -9,7 +9,7 @@ const GRADIENT_MAP: Record<string, string> = {
 };
 
 const SHIPPING_THRESHOLDS_USD: Record<string, number> = {
-  USD: 40, GBP: 45, AUD: 60, EUR: 45, ZAR: 750,
+  USD: 45, GBP: 36, AUD: 70, EUR: 42, ZAR: 820,
 };
 
 function getRate(currency: string): number {
@@ -22,7 +22,7 @@ export function MorningVeilCrossSell() {
   const {addItem, subtotal} = useCart();
   const {currency} = useCurrency();
 
-  const thresholdUsd = (SHIPPING_THRESHOLDS_USD[currency] ?? 40) / getRate(currency);
+  const thresholdUsd = (SHIPPING_THRESHOLDS_USD[currency] ?? 45) / getRate(currency);
 
   const handleAdd = (product: Product) => {
     addItem({
@@ -60,11 +60,20 @@ export function MorningVeilCrossSell() {
 
             return (
               <div key={product.handle} className="border border-sand">
-                {/* Gradient placeholder */}
-                <div className={`h-[200px] bg-gradient-to-b ${gradient} flex items-center justify-center`}>
-                  <span className="font-display text-6xl select-none" style={{color: `${product.heroColor}28`}}>
-                    ☀
-                  </span>
+                <div className={`h-[200px] bg-gradient-to-b ${gradient} flex items-center justify-center overflow-hidden`}>
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={`${product.brand} ${product.name} - Maison Masque`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="font-display text-6xl select-none" style={{color: `${product.heroColor}28`}}>
+                      ☀
+                    </span>
+                  )}
                 </div>
 
                 <div className="p-5">

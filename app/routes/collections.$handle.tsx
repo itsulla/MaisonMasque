@@ -2,9 +2,14 @@ import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
 import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
 import {useState, useMemo, useCallback} from 'react';
 import {products as allProducts, getRitualProducts, type Product} from '~/lib/products';
+
+// Collection pages must exclude 'unlisted' products — these are reachable
+// via direct URL only, not through collection browsing.
+const listedProducts = allProducts.filter((p) => !p.tags?.includes('unlisted'));
 import {useCart} from '~/lib/cartContext';
 import {Price} from '~/components/shared/Price';
 import {SectionLabel} from '~/components/shared/SectionLabel';
+import {RitualNumeral} from '~/components/shared/RitualNumeral';
 
 interface LoaderData {
   handle: string;
@@ -13,21 +18,13 @@ interface LoaderData {
 const FORMATS = ['All', 'Sheet Mask', 'Hydrogel', 'Overnight', 'Wrapping Mask', 'Elixir', 'Sunscreen', 'Bundle'] as const;
 type SortOption = 'featured' | 'price-asc' | 'price-desc';
 
-const GRADIENT_MAP: Record<string, string> = {
-  '#C9928A': 'from-rose/30 to-ivory',
-  '#D4BA7A': 'from-gold/20 to-ivory',
-  '#8FA68E': 'from-sage/30 to-ivory',
-  '#C5A55A': 'from-gold/20 to-ivory',
-  '#F5E6D0': 'from-[#F5E6D0]/30 to-ivory',
-  '#E8D5C4': 'from-[#E8D5C4]/30 to-ivory',
-};
-
 // Curated display order — interleaves categories for natural browsing
 const FEATURED_ORDER: string[] = [
   'medicube-pdrn-gel-mask',        // Ritual I
-  'medicube-pdrn-peptide-serum',   // Elixir I (PDRN pairing)
+  'medicube-pdrn-milky-toner',    // Elixir III (PDRN toner — prep)
+  'medicube-pdrn-peptide-serum',   // Elixir I (PDRN serum — amplify)
   'medicube-wrapping-mask',        // Ritual II
-  'anua-heartleaf-mask',           // Ritual III
+  'abib-heartleaf-gummy-mask',     // Ritual III
   'celdyque-pdrn-egf-serum',      // Elixir II
   'numbuzin-no3-pore-mask',        // Ritual IV
   'skin1004-centella-sleeping-pack', // Ritual V
@@ -77,7 +74,7 @@ export default function CollectionRoute() {
 
   // Fallback for unknown collections
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16 text-center">
+    <div className="max-w-7xl mx-auto px-6 pt-24 pb-16 text-center">
       <h1 className="font-display text-3xl">Collection not found</h1>
       <p className="text-walnut text-sm mt-4">
         This collection doesn&apos;t exist yet.
@@ -100,8 +97,8 @@ function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: bool
   const baseProducts = ritualOnly
     ? getRitualProducts()
     : collectionFilter
-      ? allProducts.filter((p) => p.collection === collectionFilter)
-      : allProducts;
+      ? listedProducts.filter((p) => p.collection === collectionFilter)
+      : listedProducts;
 
   const filtered = useMemo(() => {
     let list = baseProducts;
@@ -162,20 +159,47 @@ function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: bool
       ? 'Sun protection as the final step of your morning practice.'
       : collectionFilter === 'elixir'
         ? 'PDRN elixirs to amplify your ritual practice.'
-        : `${allProducts.length} ways to begin your ritual`;
+        : `${listedProducts.length} ways to begin your ritual`;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      {/* Breadcrumb */}
-      <nav className="text-xs text-stone mb-8" aria-label="Breadcrumb">
-        <Link to="/" className="hover:text-gold transition-colors">Home</Link>
-        <span className="mx-1.5">/</span>
-        <span className="text-walnut">{pageTitle}</span>
-      </nav>
+    <div>
+      {ritualOnly ? (
+        <div className="silk-hero-bg">
+          <div className="max-w-7xl mx-auto px-6 pt-24">
+            <nav className="text-xs text-stone" aria-label="Breadcrumb">
+              <Link to="/" className="hover:text-gold transition-colors">Home</Link>
+              <span className="mx-1.5">/</span>
+              <span className="text-walnut">{pageTitle}</span>
+            </nav>
+          </div>
+          <section className="max-w-3xl mx-auto px-6 pt-16 pb-24 text-center">
+            <SectionLabel>Collection I</SectionLabel>
+            <h1 className="silk-hero-title font-display mt-4">
+              The Five <span className="italic text-gold">Rituals</span>
+            </h1>
+            <div className="h-px w-[60px] bg-gold mx-auto mt-6 mb-8" />
+            <p className="text-base text-stone max-w-xl mx-auto leading-relaxed">
+              {subtitle}
+            </p>
+          </section>
+        </div>
+      ) : null}
 
-      {/* Header */}
-      <h1 className="font-display text-4xl">{pageTitle}</h1>
-      <p className="text-sm text-walnut mt-2">{subtitle}</p>
+    <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
+      {!ritualOnly && (
+        <>
+          {/* Breadcrumb */}
+          <nav className="text-xs text-stone mb-8" aria-label="Breadcrumb">
+            <Link to="/" className="hover:text-gold transition-colors">Home</Link>
+            <span className="mx-1.5">/</span>
+            <span className="text-walnut">{pageTitle}</span>
+          </nav>
+
+          {/* Header */}
+          <h1 className="font-display text-4xl">{pageTitle}</h1>
+          <p className="text-sm text-walnut mt-2">{subtitle}</p>
+        </>
+      )}
 
       {/* Filter + Sort row */}
       {!ritualOnly && (
@@ -216,7 +240,6 @@ function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: bool
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px border border-sand bg-sand">
         {filtered.map((product) => {
           const isBundle = product.handle === 'the-complete-ritual';
-          const gradient = GRADIENT_MAP[product.heroColor] ?? 'from-sand/30 to-ivory';
           const hasCompare = product.compareAtPrice > product.price;
 
           return (
@@ -236,20 +259,33 @@ function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: bool
               {/* Image */}
               <Link to={`/products/${product.handle}`} className="block">
                 <div
-                  className={`${isBundle ? 'h-[280px]' : 'h-[340px]'} bg-gradient-to-b ${gradient} flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-[1.01]`}
+                  className={`product-tile-bg ${isBundle ? 'h-[280px]' : 'h-[340px]'} flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-[1.01] relative`}
                 >
-                  <span
-                    className="font-display select-none"
-                    style={{
-                      fontSize: isBundle ? '80px' : '100px',
-                      color: `${product.heroColor}18`,
-                    }}
-                  >
-                    {product.ritualNumber
-                      ?? (product.collection === 'morning-veil' ? '☀'
-                        : product.collection === 'elixir' ? '✧'
-                          : 'MM')}
-                  </span>
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={`${product.brand} ${product.name} - Maison Masque`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span
+                      className="font-display select-none"
+                      style={{
+                        fontSize: isBundle ? '80px' : '100px',
+                        color: `${product.heroColor}18`,
+                      }}
+                    >
+                      {product.ritualNumber
+                        ?? (product.collection === 'morning-veil' ? '☀'
+                          : product.collection === 'elixir' ? '✧'
+                            : 'MM')}
+                    </span>
+                  )}
+                  {ritualOnly && product.ritualNumeral && (
+                    <RitualNumeral numeral={product.ritualNumeral} />
+                  )}
                 </div>
               </Link>
 
@@ -323,6 +359,7 @@ function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: bool
           </button>
         </div>
       )}
+    </div>
     </div>
   );
 }

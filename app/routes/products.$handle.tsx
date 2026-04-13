@@ -22,10 +22,10 @@ export const meta: MetaFunction<typeof loader> = ({data, params}) => {
         ? `${product.name} by ${product.brand} — Korean PDRN elixir. ${product.description}`
         : product.description
     : 'Shop curated Korean skincare at Maison Masque.';
-  const canonicalUrl = `https://mask.lekker.design/products/${handle}`;
+  const canonicalUrl = `https://maisonmasque.com/products/${handle}`;
   const imageUrl = product?.image
-    ? `https://mask.lekker.design${product.image}`
-    : 'https://mask.lekker.design/images/og-default.jpg';
+    ? `https://maisonmasque.com${product.image}`
+    : 'https://maisonmasque.com/images/og-default.jpg';
 
   return [
     {title},
@@ -64,7 +64,7 @@ function ProductJsonLd({handle}: {handle: string}) {
   if (!product) return null;
 
   const imageUrl = product.image
-    ? `https://mask.lekker.design${product.image}`
+    ? `https://maisonmasque.com${product.image}`
     : undefined;
 
   const jsonLd: Record<string, any> = {
@@ -81,7 +81,7 @@ function ProductJsonLd({handle}: {handle: string}) {
       price: product.price.toFixed(2),
       priceCurrency: product.currency,
       availability: 'https://schema.org/InStock',
-      url: `https://mask.lekker.design/products/${product.handle}`,
+      url: `https://maisonmasque.com/products/${product.handle}`,
       seller: {
         '@type': 'Organization',
         name: 'Maison Masque',
@@ -116,7 +116,7 @@ function ProductJsonLd({handle}: {handle: string}) {
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: 'https://mask.lekker.design/',
+        item: 'https://maisonmasque.com/',
       },
       {
         '@type': 'ListItem',
@@ -127,16 +127,16 @@ function ProductJsonLd({handle}: {handle: string}) {
             ? 'The Elixirs'
             : 'The Five Rituals',
         item: product.collection === 'morning-veil'
-          ? 'https://mask.lekker.design/the-morning-veil'
+          ? 'https://maisonmasque.com/the-morning-veil'
           : product.collection === 'elixir'
-            ? 'https://mask.lekker.design/collections/elixirs'
-            : 'https://mask.lekker.design/collections/the-five-rituals',
+            ? 'https://maisonmasque.com/collections/elixirs'
+            : 'https://maisonmasque.com/collections/the-five-rituals',
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: product.name,
-        item: `https://mask.lekker.design/products/${product.handle}`,
+        item: `https://maisonmasque.com/products/${product.handle}`,
       },
     ],
   };

@@ -6,10 +6,10 @@ import {Price} from '~/components/shared/Price';
 import {getProductByHandle} from '~/lib/products';
 import {GIFT_TIERS, GIFT_OPTIONS, PROGRESS_MESSAGES, getCurrentTier, getNextTier} from '~/lib/giftTiers';
 
-const SUGGESTED_RITUALS = ['medicube-pdrn-gel-mask', 'anua-heartleaf-mask', 'skin1004-centella-sleeping-pack'];
+const SUGGESTED_RITUALS = ['medicube-pdrn-gel-mask', 'abib-heartleaf-gummy-mask', 'skin1004-centella-sleeping-pack'];
 
 export function CartDrawer() {
-  const {lines, itemCount, subtotal, isOpen, close, addItem} = useCart();
+  const {lines, itemCount, subtotal, isOpen, close, addItem, checkoutUrl, loading} = useCart();
   const {format: formatPrice} = useCurrency();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [selectedGift, setSelectedGift] = useState<string>(GIFT_OPTIONS[0].id);
@@ -256,12 +256,22 @@ export function CartDrawer() {
               </div>
               <p className="text-xs text-walnut mb-4">Complimentary shipping on qualifying orders</p>
               <div className="w-[60px] h-px bg-gold mx-auto mb-4" />
-              <button
-                type="button"
-                className="block w-full bg-ink text-cream text-center h-12 text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-espresso transition-colors"
-              >
-                Proceed to checkout
-              </button>
+              {checkoutUrl ? (
+                <a
+                  href={checkoutUrl}
+                  className={`block w-full bg-ink text-cream text-center h-12 leading-[48px] text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-espresso transition-colors ${loading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  {loading ? 'Updating…' : 'Proceed to checkout'}
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="block w-full bg-ink/40 text-cream/60 text-center h-12 text-[11px] uppercase tracking-[0.2em] font-semibold cursor-not-allowed"
+                >
+                  Loading checkout…
+                </button>
+              )}
             </div>
           </>
         ) : (
@@ -286,20 +296,47 @@ function CartLineItem({line, isLast}: {line: CartLine; isLast: boolean}) {
   const {updateQuantity, removeItem} = useCart();
   const {format: fmtPrice} = useCurrency();
   const lineTotal = parseFloat(line.price.amount) * line.quantity;
+  const isBundle = !!line.bundleHandle;
 
   return (
     <div className={`flex gap-4 py-4 ${isLast ? '' : 'border-b border-sand'}`}>
       <div className="w-[60px] h-[60px] flex-shrink-0 bg-cream overflow-hidden">
         {line.image?.url ? (
           <img src={line.image.url} alt={line.image.altText ?? line.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+        ) : isBundle ? (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{background: 'linear-gradient(135deg, #F3EFE6 0%, #E8E2D6 100%)'}}
+          >
+            <span className="font-display text-gold text-lg">✧</span>
+          </div>
         ) : (
           <div className="w-full h-full bg-gradient-to-b from-sand/30 to-ivory" />
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-sm text-ink leading-tight truncate">{line.title}</h4>
-        <p className="text-[10px] uppercase tracking-[3px] text-stone mt-0.5">{line.vendor}</p>
+        {isBundle ? (
+          <h4 className="font-display text-[15px] text-ink leading-tight">{line.title}</h4>
+        ) : (
+          <h4 className="text-sm text-ink leading-tight truncate">{line.title}</h4>
+        )}
+        {!isBundle && (
+          <p className="text-[10px] uppercase tracking-[3px] text-stone mt-0.5">{line.vendor}</p>
+        )}
         {line.ritualLabel && <p className="text-[10px] text-gold mt-0.5">{line.ritualLabel}</p>}
+
+        {/* Bundle contents — indented list of included items */}
+        {isBundle && line.selectedItems && line.selectedItems.length > 0 && (
+          <ul className="mt-2 pl-3 border-l border-sand space-y-1">
+            {line.selectedItems.map((item, i) => (
+              <li key={i} className="text-[11px] text-stone leading-tight">
+                <span className="text-walnut">{item.vendor}</span>
+                <span className="text-stone"> — {item.title}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <div className="flex items-center border border-sand h-7 w-fit mt-2">
           <button type="button" onClick={() => updateQuantity(line.id, line.quantity - 1)} className="w-7 h-full flex items-center justify-center text-stone hover:text-ink transition-colors text-xs" aria-label={`Decrease quantity of ${line.title}`}>&minus;</button>
           <span className="w-6 h-full flex items-center justify-center text-xs font-body border-x border-sand">{line.quantity}</span>

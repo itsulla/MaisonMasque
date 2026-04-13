@@ -1,0 +1,40 @@
+mutation createCollections {
+  rituals: collectionCreate(input: {
+    handle: "the-five-rituals"
+    title: "The Five Rituals"
+    descriptionHtml: "<p>Five masks. Five intentions.</p>"
+    ruleSet: {
+      rules: [{ column: TAG, relation: EQUALS, condition: "ritual" }]
+      appliedDisjunctively: false
+    }
+  }) {
+    collection { id handle }
+    userErrors { field message }
+  }
+
+  elixirs: collectionCreate(input: {
+    handle: "elixirs"
+    title: "The Elixirs"
+    descriptionHtml: "<p>PDRN elixirs to amplify your ritual practice.</p>"
+    ruleSet: {
+      rules: [{ column: TAG, relation: EQUALS, condition: "elixir" }]
+      appliedDisjunctively: false
+    }
+  }) {
+    collection { id handle }
+    userErrors { field message }
+  }
+
+  morningVeil: collectionCreate(input: {
+    handle: "morning-veil"
+    title: "The Morning Veil"
+    descriptionHtml: "<p>Sun protection as the final step of your morning practice.</p>"
+    ruleSet: {
+      rules: [{ column: TAG, relation: EQUALS, condition: "morning-veil" }]
+      appliedDisjunctively: false
+    }
+  }) {
+    collection { id handle }
+    userErrors { field message }
+  }
+}

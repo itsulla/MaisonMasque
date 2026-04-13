@@ -6,7 +6,7 @@ import {Philosophy} from '~/components/home/Philosophy';
 import {RitualGuide} from '~/components/home/RitualGuide';
 import {Subscription} from '~/components/home/Subscription';
 import {TrustBar} from '~/components/shared/TrustBar';
-import {BundleBuilder} from '~/components/home/BundleBuilder';
+import {ChooseYourRitual} from '~/components/home/ChooseYourRitual';
 import {MorningVeilPromo} from '~/components/home/MorningVeilPromo';
 import {ElixirsPromo} from '~/components/home/ElixirsPromo';
 
@@ -45,7 +45,7 @@ export default function Homepage() {
       <FiveRituals />
       <ElixirsPromo />
       <Divider />
-      <BundleBuilder />
+      <ChooseYourRitual />
       <MorningVeilPromo />
       <Divider />
       <Philosophy />

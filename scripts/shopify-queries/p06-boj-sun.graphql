@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "beauty-of-joseon-relief-sun"
+    title: "Relief Sun"
+    vendor: "Beauty of Joseon"
+    productType: "Sunscreen"
+    descriptionHtml: "<p>A weightless sun shield that melts into skin like a serum. 30% Rice extract brightens while probiotics strengthen your barrier. SPF50+ PA++++.</p><p><strong>Key Ingredients:</strong> Rice Extract (30%) + Probiotics + Chemical UV Filters</p>"
+    tags: ["morning-veil", "sunscreen", "spf", "beauty-of-joseon", "Morning Veil"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

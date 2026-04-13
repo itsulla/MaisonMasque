@@ -27,17 +27,17 @@ const PAIRINGS: Record<string, {handle: string; label: string}> = {
     label: 'Ritual I — Restore',
   },
   'heimish-artless-glow-tinted-sunscreen': {
-    handle: 'anua-heartleaf-mask',
+    handle: 'abib-heartleaf-gummy-mask',
     label: 'Ritual III — Calm',
   },
 };
 
 const SHIPPING_THRESHOLDS: Record<string, number> = {
-  USD: 40,
-  GBP: 45,
-  AUD: 60,
-  EUR: 45,
-  ZAR: 750,
+  USD: 45,
+  GBP: 36,
+  AUD: 70,
+  EUR: 42,
+  ZAR: 820,
 };
 
 const GRADIENT_MAP: Record<string, string> = {
@@ -57,7 +57,7 @@ export default function MorningVeilPage() {
   const ritualProducts = getRitualProducts();
   const {currency, format} = useCurrency();
 
-  const threshold = SHIPPING_THRESHOLDS[currency] ?? 40;
+  const threshold = SHIPPING_THRESHOLDS[currency] ?? 45;
   const formattedThreshold = format(threshold / getRate(currency));
 
   return (

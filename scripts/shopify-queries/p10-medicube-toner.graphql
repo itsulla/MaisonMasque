@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "medicube-pdrn-milky-toner"
+    title: "Elixir III — Illuminate"
+    vendor: "Medicube"
+    productType: "Elixir"
+    descriptionHtml: "<p>The daily PDRN ritual your skin drinks in. A milky, lightweight toner in a generous 150ml format — the foundation of every morning and evening practice.</p><p><strong>Key Ingredients:</strong> PDRN + Niacinamide + Ceramides</p>"
+    tags: ["elixir", "pdrn", "toner", "niacinamide", "medicube", "brightening", "Elixir III", "Illuminate"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}

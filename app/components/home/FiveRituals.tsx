@@ -61,6 +61,7 @@ export function FiveRituals() {
             key={product.handle}
             product={product}
             index={index}
+            ritualNumeral={product.ritualNumeral}
             onQuickView={handleQuickView}
             onAddToCart={handleAddToCart}
             className={

@@ -2,10 +2,10 @@ import {useCurrency} from '~/lib/currencyContext';
 
 const THRESHOLDS: Record<string, number> = {
   USD: 45,
-  AUD: 60,
-  GBP: 35,
-  EUR: 50,
-  ZAR: 750,
+  AUD: 70,
+  GBP: 36,
+  EUR: 42,
+  ZAR: 820,
 };
 
 export function AnnouncementBar() {

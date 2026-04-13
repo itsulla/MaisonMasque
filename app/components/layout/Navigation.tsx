@@ -2,7 +2,7 @@ import {Link} from '@remix-run/react';
 import {useEffect, useState, useRef} from 'react';
 import {useCart} from '~/lib/cartContext';
 
-const SCROLL_THRESHOLD = 80;
+const SCROLL_THRESHOLD = 10;
 const SECTION_IDS = ['hero', 'rituals', 'philosophy', 'practice', 'subscription', 'footer'];
 
 interface NavLinkItem {
@@ -18,11 +18,18 @@ const LEFT_LINKS: NavLinkItem[] = [
 ];
 
 const RIGHT_LINKS: NavLinkItem[] = [
+  {label: 'The Evening Ritual', href: '/products/the-evening-ritual'},
   {label: 'The Complete Ritual', href: '/products/the-complete-ritual'},
+  {label: 'Build Your Own', href: '/build-your-own'},
   {label: 'Skin Quiz', href: '/quiz'},
 ];
 
-export function Navigation() {
+export interface NavigationProps {
+  theme?: 'light' | 'dark';
+}
+
+export function Navigation({theme = 'light'}: NavigationProps) {
+  const isDark = theme === 'dark';
   const {itemCount, open: openCart} = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('hero');
@@ -87,14 +94,17 @@ export function Navigation() {
     `text-xs uppercase tracking-[3px] transition-colors duration-300 ${
       section && activeSection === section
         ? 'text-gold'
-        : 'text-walnut hover:text-gold'
+        : isDark
+          ? 'text-cream/70 hover:text-gold-light'
+          : 'text-walnut hover:text-gold'
     }`;
 
   return (
     <header
       className={`nav-header sticky top-0 z-[100] transition-all duration-300 ease-in-out ${
         scrolled ? 'nav-scrolled' : 'nav-top'
-      }`}
+      } ${isDark ? 'nav-dark' : ''}`}
+      style={isDark ? {backgroundColor: '#2C2722', borderBottom: '1px solid rgba(197,165,90,0.15)'} : undefined}
     >
       <nav
         className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"
@@ -128,7 +138,7 @@ export function Navigation() {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="w-6 h-6 text-ink"
+            className={`w-6 h-6 ${isDark ? 'text-cream' : 'text-ink'}`}
           >
             <path
               strokeLinecap="round"
@@ -145,12 +155,12 @@ export function Navigation() {
             className="nav-logo-link block transition-transform duration-300 ease-in-out"
             style={{transform: scrolled ? 'scale(0.9)' : 'scale(1)'}}
           >
-            <span className="font-display text-[28px] uppercase tracking-[4px] text-ink">
+            <span className={`font-display text-[28px] uppercase tracking-[4px] ${isDark ? 'text-cream' : 'text-ink'}`}>
               MAISON MASQUE
             </span>
           </Link>
           <span
-            className="nav-subtitle text-[9px] uppercase tracking-[3px] text-stone transition-all duration-300 ease-in-out overflow-hidden"
+            className={`nav-subtitle text-[9px] uppercase tracking-[3px] transition-all duration-300 ease-in-out overflow-hidden ${isDark ? 'text-cream/50' : 'text-stone'}`}
             style={{
               opacity: scrolled ? 0 : 1,
               maxHeight: scrolled ? '0px' : '20px',
@@ -173,7 +183,7 @@ export function Navigation() {
           ))}
           <button
             onClick={openCart}
-            className="relative text-xs uppercase tracking-[3px] text-walnut hover:text-gold transition-colors"
+            className={`relative text-xs uppercase tracking-[3px] transition-colors ${isDark ? 'text-cream/70 hover:text-gold-light' : 'text-walnut hover:text-gold'}`}
             aria-label={bagLabel}
           >
             Bag
@@ -200,7 +210,7 @@ export function Navigation() {
             viewBox="0 0 24 24"
             strokeWidth={1.5}
             stroke="currentColor"
-            className="w-6 h-6 text-ink"
+            className={`w-6 h-6 ${isDark ? 'text-cream' : 'text-ink'}`}
           >
             <path
               strokeLinecap="round"

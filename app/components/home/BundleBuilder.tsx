@@ -1,4 +1,5 @@
 import {useState, useMemo} from 'react';
+import {Link} from '@remix-run/react';
 import {SectionLabel} from '~/components/shared/SectionLabel';
 import {Price} from '~/components/shared/Price';
 import {useCurrency} from '~/lib/currencyContext';
@@ -10,28 +11,123 @@ const morningVeilProducts = getMorningVeilProducts();
 const elixirProducts = getElixirProducts();
 const allBuildableProducts = [...ritualProducts, ...morningVeilProducts, ...elixirProducts];
 
-const TIERS = [
-  {count: 3, discount: 0.1, label: '3 items: 10% off'},
-  {count: 4, discount: 0.15, label: '4 items: 15% off'},
-  {count: 5, discount: 0.21, label: '5+ items: 21% off'},
-];
-
 type FilterTab = 'all' | 'rituals' | 'elixirs' | 'sunscreens';
 
-const GRADIENT_MAP: Record<string, string> = {
-  '#C9928A': 'from-rose/30 to-ivory',
-  '#D4BA7A': 'from-gold/20 to-ivory',
-  '#8FA68E': 'from-sage/30 to-ivory',
-  '#C5A55A': 'from-gold/20 to-ivory',
-  '#F5E6D0': 'from-[#F5E6D0]/30 to-ivory',
-  '#E8D5C4': 'from-[#E8D5C4]/30 to-ivory',
-};
+/**
+ * Single-tier bundle discount: 4+ items = 15% off.
+ * Curated bundles (The Evening Ritual, The Complete Ritual) are the primary
+ * "two paths" — Build Your Own is the third option for customers who want
+ * full control.
+ */
+const BUNDLE_THRESHOLD = 4;
+const BUNDLE_DISCOUNT = 0.15;
 
 function getDiscount(count: number): number {
-  if (count >= 5) return 0.21;
-  if (count >= 4) return 0.15;
-  if (count >= 3) return 0.1;
-  return 0;
+  return count >= BUNDLE_THRESHOLD ? BUNDLE_DISCOUNT : 0;
+}
+
+function getFillPercent(count: number): number {
+  // Cap at the threshold — any count >= 4 is 100%
+  return Math.min(100, (count / BUNDLE_THRESHOLD) * 100);
+}
+
+function TierMessage({count, className = ''}: {count: number; className?: string}) {
+  const reached = count >= BUNDLE_THRESHOLD;
+  const remaining = BUNDLE_THRESHOLD - count;
+  return (
+    <p
+      className={`font-body text-stone ${className}`}
+      style={{fontSize: '13px'}}
+      aria-live="polite"
+    >
+      {reached ? (
+        <>
+          <span className="text-gold font-semibold">15% off</span>
+          <span> applied — your ritual is complete</span>
+        </>
+      ) : count === 0 ? (
+        <>
+          Choose <span className="text-ink">4 or more items</span> to unlock{' '}
+          <span className="text-gold font-semibold">15% off</span>
+        </>
+      ) : (
+        <>
+          Add <span className="text-ink">{remaining} more</span> to unlock{' '}
+          <span className="text-gold font-semibold">15% off</span>
+        </>
+      )}
+    </p>
+  );
+}
+
+function TierProgressBar({count}: {count: number}) {
+  const fill = getFillPercent(count);
+  return (
+    <div className="max-w-2xl mx-auto mb-10">
+      {/* Single threshold label */}
+      <div className="flex justify-between items-baseline mb-3">
+        <span
+          className="uppercase tracking-wider font-body"
+          style={{fontSize: '11px', color: '#8A8279', fontWeight: 500}}
+        >
+          {count} selected
+        </span>
+        <span
+          className="uppercase tracking-wider transition-colors duration-300 font-body"
+          style={{
+            fontSize: '11px',
+            color: count >= BUNDLE_THRESHOLD ? '#C5A55A' : '#8A8279',
+            fontWeight: 600,
+          }}
+        >
+          4+ items: 15% off
+        </span>
+      </div>
+
+      {/* Track */}
+      <div
+        className="relative w-full"
+        style={{
+          height: '6px',
+          backgroundColor: '#E8E2D6',
+          borderRadius: '9999px',
+        }}
+        role="progressbar"
+        aria-valuenow={fill}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Bundle discount progress"
+      >
+        {/* Fill */}
+        <div
+          className="absolute top-0 left-0 h-full rounded-full"
+          style={{
+            width: `${fill}%`,
+            background: 'linear-gradient(90deg, #C5A55A 0%, #D4BA7A 100%)',
+            transition: 'width 300ms ease-out',
+          }}
+        />
+        {/* Single threshold dot at 100% */}
+        <span
+          aria-hidden="true"
+          className="absolute rounded-full"
+          style={{
+            left: '100%',
+            top: '50%',
+            width: '10px',
+            height: '10px',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: count >= BUNDLE_THRESHOLD ? '#C5A55A' : '#8A8279',
+            boxShadow: '0 0 0 2px #FAF8F3',
+            transition: 'background-color 300ms ease-out',
+          }}
+        />
+      </div>
+
+      {/* Dynamic message */}
+      <TierMessage count={count} className="mt-4 text-center" />
+    </div>
+  );
 }
 
 export function BundleBuilder() {
@@ -54,8 +150,8 @@ export function BundleBuilder() {
 
   const count = selected.size;
   const discount = getDiscount(count);
-  const canAdd = count >= 3;
-  const remaining = Math.max(0, 3 - count);
+  const canAdd = count >= BUNDLE_THRESHOLD;
+  const remaining = Math.max(0, BUNDLE_THRESHOLD - count);
 
   const visibleProducts = useMemo(() => {
     if (filter === 'rituals') return ritualProducts;
@@ -130,35 +226,49 @@ export function BundleBuilder() {
           Create your personal ritual
         </h2>
         <p className="text-sm text-walnut mt-3 max-w-lg mx-auto">
-          Choose any three or more products and save. Mix masks, elixirs, and
-          sunscreens &mdash; the more you add, the deeper the discount.
+          Choose any four or more products and save 15%. Mix masks, elixirs, and
+          sunscreens in the combination that suits your skin.
         </p>
       </div>
 
-      {/* Tier bar */}
-      <div className="flex justify-center gap-8 mb-6">
-        {TIERS.map((tier) => {
-          const isActive = count >= tier.count;
-          const isExact =
-            (count === tier.count) || (count >= 5 && tier.count === 5);
-          return (
-            <div
-              key={tier.count}
-              className={`text-center pb-2 transition-colors ${
-                isExact
-                  ? 'text-gold border-b-2 border-gold'
-                  : isActive
-                    ? 'text-gold'
-                    : 'text-stone'
-              }`}
-            >
-              <span className="text-xs uppercase tracking-[2px] font-semibold">
-                {tier.label}
-              </span>
+      {/* Curated-bundle banner — directs customers to the two primary paths */}
+      <div className="max-w-3xl mx-auto mb-10 border border-sand bg-ivory/40 px-5 py-4">
+        <p className="text-[12px] uppercase tracking-[2px] text-stone font-semibold font-body mb-2">
+          Looking for a curated selection?
+        </p>
+        <p className="text-[13px] text-walnut mb-3">
+          Try one of our two curated paths — hand-composed for the nighttime or the full day.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Link
+            to="/products/the-evening-ritual"
+            className="group flex items-center justify-between border border-sand bg-cream px-4 py-3 hover:border-gold transition-colors"
+          >
+            <div>
+              <p className="font-display text-[14px] text-ink group-hover:text-gold transition-colors">
+                The Evening Ritual
+              </p>
+              <p className="text-[11px] text-stone mt-0.5">3 masks + 2 elixirs · Save 18%</p>
             </div>
-          );
-        })}
+            <span className="text-gold text-lg" aria-hidden="true">&rarr;</span>
+          </Link>
+          <Link
+            to="/products/the-complete-ritual"
+            className="group flex items-center justify-between border border-sand bg-cream px-4 py-3 hover:border-gold transition-colors"
+          >
+            <div>
+              <p className="font-display text-[14px] text-ink group-hover:text-gold transition-colors">
+                The Complete Ritual
+              </p>
+              <p className="text-[11px] text-stone mt-0.5">All 5 masks + elixirs + veil · Save 25%</p>
+            </div>
+            <span className="text-gold text-lg" aria-hidden="true">&rarr;</span>
+          </Link>
+        </div>
       </div>
+
+      {/* Tier progress bar */}
+      <TierProgressBar count={count} />
 
       {/* Filter tabs */}
       <div className="flex justify-center gap-1 mb-8">
@@ -191,7 +301,6 @@ export function BundleBuilder() {
       }`}>
         {visibleProducts.map((product) => {
           const isSelected = selected.has(product.handle);
-          const gradient = GRADIENT_MAP[product.heroColor] ?? 'from-sand/30 to-ivory';
           const isSunscreen = product.collection === 'morning-veil';
           const isElixirProduct = product.collection === 'elixir';
 
@@ -221,18 +330,28 @@ export function BundleBuilder() {
                 </div>
               </div>
 
-              {/* Image placeholder */}
+              {/* Image */}
               <div
-                className={`h-[200px] bg-gradient-to-b ${gradient} flex items-center justify-center ${
+                className={`product-tile-bg h-[200px] flex items-center justify-center overflow-hidden ${
                   isSelected ? 'border-b-2 border-gold' : ''
                 }`}
               >
-                <span
-                  className="font-display text-6xl select-none"
-                  style={{color: `${product.heroColor}20`}}
-                >
-                  {isSunscreen ? '☀' : isElixirProduct ? '✧' : product.ritualNumber}
-                </span>
+                {product.image ? (
+                  <img
+                    src={product.image}
+                    alt={`${product.brand} ${product.name} - Maison Masque`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span
+                    className="font-display text-6xl select-none"
+                    style={{color: `${product.heroColor}20`}}
+                  >
+                    {isSunscreen ? '☀' : isElixirProduct ? '✧' : product.ritualNumber}
+                  </span>
+                )}
               </div>
 
               {/* Content */}
@@ -305,18 +424,21 @@ export function BundleBuilder() {
       {/* Running total */}
       <div className={`border border-sand ${suggestion ? '' : 'border-t-0'} px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-          <span className="text-sm text-ink font-medium">
-            {count} {count === 1 ? 'item' : 'items'} selected
-            {([selectedRituals.length > 0, selectedElixirs.length > 0, selectedSunscreens.length > 0].filter(Boolean).length > 1) && (
-              <span className="text-stone font-normal ml-1">
-                ({[
-                  selectedRituals.length > 0 ? `${selectedRituals.length} ritual${selectedRituals.length !== 1 ? 's' : ''}` : '',
-                  selectedElixirs.length > 0 ? `${selectedElixirs.length} elixir${selectedElixirs.length !== 1 ? 's' : ''}` : '',
-                  selectedSunscreens.length > 0 ? `${selectedSunscreens.length} sunscreen${selectedSunscreens.length !== 1 ? 's' : ''}` : '',
-                ].filter(Boolean).join(', ')})
-              </span>
-            )}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm text-ink font-medium">
+              {count} {count === 1 ? 'item' : 'items'} selected
+              {([selectedRituals.length > 0, selectedElixirs.length > 0, selectedSunscreens.length > 0].filter(Boolean).length > 1) && (
+                <span className="text-stone font-normal ml-1">
+                  ({[
+                    selectedRituals.length > 0 ? `${selectedRituals.length} ritual${selectedRituals.length !== 1 ? 's' : ''}` : '',
+                    selectedElixirs.length > 0 ? `${selectedElixirs.length} elixir${selectedElixirs.length !== 1 ? 's' : ''}` : '',
+                    selectedSunscreens.length > 0 ? `${selectedSunscreens.length} sunscreen${selectedSunscreens.length !== 1 ? 's' : ''}` : '',
+                  ].filter(Boolean).join(', ')})
+                </span>
+              )}
+            </span>
+            <TierMessage count={count} />
+          </div>
           {count > 0 && (
             <span className="text-sm text-walnut">
               Subtotal:{' '}

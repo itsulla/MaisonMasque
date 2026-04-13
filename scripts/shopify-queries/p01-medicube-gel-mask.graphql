@@ -1,0 +1,13 @@
+mutation {
+  productCreate(product: {
+    handle: "medicube-pdrn-gel-mask"
+    title: "PDRN Pink Collagen Gel Mask"
+    vendor: "Medicube"
+    productType: "Sheet Mask"
+    descriptionHtml: "<p>A colour-changing hydrogel infused with salmon PDRN and low-molecular collagen. Apply as pink, remove when transparent — your skin has absorbed every drop.</p><p><strong>Key Ingredients:</strong> Salmon PDRN + Hydrolysed Collagen + Niacinamide</p>"
+    tags: ["ritual", "hydrogel", "pdrn", "collagen", "medicube", "Ritual I", "Restore"]
+  }) {
+    product { id handle variants(first: 1) { edges { node { id } } } }
+    userErrors { field message }
+  }
+}
