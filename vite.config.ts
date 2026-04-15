@@ -1,5 +1,6 @@
 import {defineConfig} from 'vite';
 import {hydrogen} from '@shopify/hydrogen/vite';
+import {oxygen} from '@shopify/mini-oxygen/vite';
 import {vitePlugin as remix} from '@remix-run/dev';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
@@ -8,20 +9,22 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': path.resolve(__dirname, 'app'),
-      // Force the worker-compatible React DOM server renderer
       'react-dom/server': 'react-dom/server.browser',
     },
   },
   define: {
-    // Cloudflare Workers doesn't have Node.js `process` global
     'process.env.NODE_ENV': JSON.stringify('production'),
   },
   ssr: {
     noExternal: true,
+    resolve: {
+      conditions: ['workerd', 'worker', 'browser'],
+    },
   },
   plugins: [
     tailwindcss(),
     hydrogen(),
+    oxygen(),
     remix({
       presets: [hydrogen.preset()],
       future: {
