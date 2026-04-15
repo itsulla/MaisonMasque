@@ -17,6 +17,7 @@ import {ScrollProgress} from '~/components/shared/ScrollProgress';
 import {EmailPopup} from '~/components/shared/EmailPopup';
 import {BackToTop} from '~/components/shared/BackToTop';
 import {SocialProofToast} from '~/components/shared/SocialProofToast';
+import {AnalyticsScripts, AnalyticsPageview} from '~/components/shared/Analytics';
 import {CartProvider} from '~/lib/cartContext';
 import {CurrencyProvider} from '~/lib/currencyContext';
 import appStyles from '~/styles/app.css?url';
@@ -121,6 +122,43 @@ function AppShell() {
   );
 }
 
+const ORGANIZATION_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'Maison Masque',
+  alternateName: 'The House of Masks',
+  url: 'https://maisonmasque.com',
+  logo: 'https://maisonmasque.com/logo.png',
+  description:
+    'Curated Korean sheet masks from Medicube, Anua, SKIN1004 and more. Sourced in Hong Kong, shipped worldwide to Australia, UK, Europe and South Africa.',
+  sameAs: [
+    'https://instagram.com/maisonmasque',
+    'https://tiktok.com/@maisonmasque',
+  ],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    email: 'ulrich@lekker.design',
+    contactType: 'customer service',
+    areaServed: ['AU', 'GB', 'EU', 'ZA', 'US'],
+    availableLanguage: 'English',
+  },
+};
+
+const WEBSITE_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Maison Masque',
+  url: 'https://maisonmasque.com',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: 'https://maisonmasque.com/search?q={search_term_string}',
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export default function App() {
   const location = useLocation();
   const isDark = DARK_THEME_ROUTES.has(location.pathname);
@@ -131,6 +169,15 @@ export default function App() {
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(ORGANIZATION_SCHEMA)}}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{__html: JSON.stringify(WEBSITE_SCHEMA)}}
+        />
+        <AnalyticsScripts />
       </head>
       <body
         className={`font-body antialiased ${isDark ? 'text-cream' : 'bg-cream text-ink'}`}
@@ -141,6 +188,7 @@ export default function App() {
             <AppShell />
           </CartProvider>
         </CurrencyProvider>
+        <AnalyticsPageview />
         <ScrollRestoration />
         <Scripts />
       </body>
