@@ -15,13 +15,12 @@ const LEFT_LINKS: NavLinkItem[] = [
   {label: 'All', href: '/collections/all'},
   {label: 'Five Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
   {label: 'Elixirs', href: '/collections/elixirs'},
-  {label: 'Morning Veil', href: '/the-morning-veil'},
+  {label: 'Evening Ritual', href: '/products/the-evening-ritual'},
 ];
 
 const RIGHT_LINKS: NavLinkItem[] = [
-  {label: 'Evening Ritual', href: '/products/the-evening-ritual'},
   {label: 'Complete Ritual', href: '/products/the-complete-ritual'},
-  {label: 'Build Your Own', href: '/build-your-own'},
+  {label: 'Build Your Bundle', href: '/build-your-own'},
   {label: 'Skin Quiz', href: '/quiz'},
 ];
 
