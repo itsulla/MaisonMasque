@@ -78,6 +78,17 @@ interface CurrencyContextValue {
 
 const CurrencyContext = createContext<CurrencyContextValue | null>(null);
 
+// Currency → representative country for the Storefront API @inContext
+// directive. EUR maps to DE (arbitrary EU member). Kept in sync with
+// CURRENCY_TO_COUNTRY in server.ts.
+const CURRENCY_COUNTRY: Record<CurrencyCode, string> = {
+  USD: 'US',
+  GBP: 'GB',
+  AUD: 'AU',
+  EUR: 'DE',
+  ZAR: 'ZA',
+};
+
 export function CurrencyProvider({children}: {children: React.ReactNode}) {
   const [currency, setCurrencyState] = useState<CurrencyCode>('USD');
 
@@ -86,17 +97,22 @@ export function CurrencyProvider({children}: {children: React.ReactNode}) {
     const stored = getCookie('mm_currency') as CurrencyCode | null;
     if (stored && RATES[stored]) {
       setCurrencyState(stored);
+      // Ensure mm_country cookie stays in sync so server-side Storefront
+      // queries use the right @inContext country on the NEXT request.
+      setCookie('mm_country', CURRENCY_COUNTRY[stored]);
     } else {
       const country = detectCountry();
       const detected = COUNTRY_CURRENCY[country] ?? 'USD';
       setCurrencyState(detected);
       setCookie('mm_currency', detected);
+      setCookie('mm_country', CURRENCY_COUNTRY[detected]);
     }
   }, []);
 
   const setCurrency = useCallback((code: CurrencyCode) => {
     setCurrencyState(code);
     setCookie('mm_currency', code);
+    setCookie('mm_country', CURRENCY_COUNTRY[code]);
   }, []);
 
   const convert = useCallback(

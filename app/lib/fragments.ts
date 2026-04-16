@@ -1,52 +1,86 @@
-export const PRODUCT_VARIANT_FRAGMENT = `#graphql
-  fragment ProductVariantFragment on ProductVariant {
-    id
-    availableForSale
-    price {
-      amount
-      currencyCode
-    }
-    compareAtPrice {
-      amount
-      currencyCode
-    }
-    selectedOptions {
-      name
-      value
-    }
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
+/**
+ * GraphQL fragments for the Shopify Storefront API.
+ *
+ * Two product fragments: a lightweight `PRODUCT_ITEM_FRAGMENT` for list views
+ * (homepage grids, collection pages) and a richer `PRODUCT_FULL_FRAGMENT` for
+ * PDP with descriptionHtml, gallery images, metafields, and all variants.
+ *
+ * Editorial copy (ritual number, key ingredient, social proof, hero colour,
+ * how-to-use) lives in app/lib/products.ts — these fragments only fetch data
+ * Shopify owns: price, image, title, vendor, description, availability.
+ */
+
+export const MONEY_FRAGMENT = `#graphql
+  fragment MoneyFragment on MoneyV2 {
+    amount
+    currencyCode
   }
 ` as const;
 
-export const PRODUCT_FRAGMENT = `#graphql
-  fragment ProductFragment on Product {
+export const IMAGE_FRAGMENT = `#graphql
+  fragment ImageFragment on Image {
     id
-    title
+    url
+    altText
+    width
+    height
+  }
+` as const;
+
+/**
+ * Lightweight product fragment for list views.
+ * Includes the canonical first variant GID so Stage 5 cart lines can add
+ * products directly from a listing without a second round-trip.
+ */
+export const PRODUCT_ITEM_FRAGMENT = `#graphql
+  fragment ProductItemFragment on Product {
+    id
     handle
+    title
     vendor
-    description
-    descriptionHtml
+    productType
+    tags
+    availableForSale
     featuredImage {
-      id
-      url
-      altText
-      width
-      height
+      ...ImageFragment
     }
     priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
+      minVariantPrice { ...MoneyFragment }
+      maxVariantPrice { ...MoneyFragment }
+    }
+    compareAtPriceRange {
+      minVariantPrice { ...MoneyFragment }
+      maxVariantPrice { ...MoneyFragment }
+    }
+    variants(first: 1) {
+      nodes {
+        id
+        availableForSale
+        price { ...MoneyFragment }
+        compareAtPrice { ...MoneyFragment }
       }
-      maxVariantPrice {
-        amount
-        currencyCode
+    }
+  }
+  ${IMAGE_FRAGMENT}
+  ${MONEY_FRAGMENT}
+` as const;
+
+/**
+ * Full product fragment for PDP — extends PRODUCT_ITEM_FRAGMENT with
+ * descriptionHtml, gallery images, SEO, metafields, and all variants.
+ */
+export const PRODUCT_FULL_FRAGMENT = `#graphql
+  fragment ProductFullFragment on Product {
+    ...ProductItemFragment
+    description
+    descriptionHtml
+    seo {
+      title
+      description
+    }
+    images(first: 5) {
+      nodes {
+        ...ImageFragment
       }
     }
     options {
@@ -55,7 +89,15 @@ export const PRODUCT_FRAGMENT = `#graphql
     }
     variants(first: 10) {
       nodes {
-        ...ProductVariantFragment
+        id
+        availableForSale
+        price { ...MoneyFragment }
+        compareAtPrice { ...MoneyFragment }
+        selectedOptions {
+          name
+          value
+        }
+        image { ...ImageFragment }
       }
     }
     metafields(
@@ -66,55 +108,25 @@ export const PRODUCT_FRAGMENT = `#graphql
         {namespace: "custom", key: "key_ingredient"}
       ]
     ) {
+      namespace
       key
       value
-      namespace
-    }
-    sellingPlanGroups(first: 5) {
-      nodes {
-        name
-        sellingPlans(first: 10) {
-          nodes {
-            id
-            name
-            options {
-              name
-              value
-            }
-            priceAdjustments {
-              adjustmentValue {
-                ... on SellingPlanPercentagePriceAdjustment {
-                  adjustmentPercentage
-                }
-              }
-              orderCount
-            }
-          }
-        }
-      }
     }
   }
-  ${PRODUCT_VARIANT_FRAGMENT}
+  ${PRODUCT_ITEM_FRAGMENT}
 ` as const;
 
 export const COLLECTION_FRAGMENT = `#graphql
   fragment CollectionFragment on Collection {
     id
-    title
     handle
+    title
     description
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    products(first: 10) {
-      nodes {
-        ...ProductFragment
-      }
+    image { ...ImageFragment }
+    products(first: 30) {
+      nodes { ...ProductItemFragment }
     }
   }
-  ${PRODUCT_FRAGMENT}
+  ${IMAGE_FRAGMENT}
+  ${PRODUCT_ITEM_FRAGMENT}
 ` as const;

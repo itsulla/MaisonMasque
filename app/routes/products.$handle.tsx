@@ -1,15 +1,16 @@
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
-import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {ProductPage} from '~/components/product/ProductPage';
-import {getProductByHandle} from '~/lib/products';
+import {mergeProduct, type MergedProduct, type ShopifyProduct} from '~/lib/productAdapter';
+import {PRODUCT_QUERY} from '~/lib/queries';
 
 interface LoaderData {
-  handle: string;
+  product: MergedProduct;
 }
 
 export const meta: MetaFunction<typeof loader> = ({data, params}) => {
   const handle = params.handle ?? '';
-  const product = getProductByHandle(handle);
+  const product = data?.product ?? null;
   const title = product
     ? `${product.name} by ${product.brand} | Maison Masque`
     : 'Product | Maison Masque';
@@ -24,7 +25,9 @@ export const meta: MetaFunction<typeof loader> = ({data, params}) => {
     : 'Shop curated Korean skincare at Maison Masque.';
   const canonicalUrl = `https://maisonmasque.com/products/${handle}`;
   const imageUrl = product?.image
-    ? `https://maisonmasque.com${product.image}`
+    ? product.image.startsWith('http')
+      ? product.image
+      : `https://maisonmasque.com${product.image}`
     : 'https://maisonmasque.com/images/og-default.jpg';
 
   return [
@@ -54,24 +57,42 @@ export const meta: MetaFunction<typeof loader> = ({data, params}) => {
   ];
 };
 
-export async function loader({params}: LoaderFunctionArgs): Promise<LoaderData> {
+export async function loader({params, context}: LoaderFunctionArgs) {
   const handle = params.handle ?? '';
-  // Return proper 404 for handles that no longer exist in the catalogue.
-  // Without this, deleted products render an empty shell with HTTP 200,
-  // which crawlers index as live content.
-  const product = getProductByHandle(handle);
+
+  // Fetch live Storefront API data in parallel with the fallback. Wrapped in
+  // try/catch so a Shopify outage (or an unpublished handle) doesn't block
+  // rendering — mergeProduct() handles null live data by using products.ts only.
+  // Hydrogen's storefront client auto-injects the `country`/`language`
+  // variables from its i18n config (set per-request in server.ts based on
+  // cookie + Oxygen-Buyer-Country header), so we only pass the handle here.
+  let live: ShopifyProduct | null = null;
+  try {
+    const result = await context.storefront.query<{product: ShopifyProduct | null}>(
+      PRODUCT_QUERY,
+      {variables: {handle}},
+    );
+    live = result?.product ?? null;
+  } catch (err) {
+    console.warn(`[products.$handle] Storefront API query failed for ${handle}:`, err);
+  }
+
+  const product = mergeProduct(handle, live);
+
+  // True 404: neither Shopify nor products.ts knows this handle. Without this
+  // response status, deleted products render as empty shells with HTTP 200.
   if (!product) {
     throw new Response('Product not found', {status: 404});
   }
-  return {handle};
+
+  return json<LoaderData>({product});
 }
 
-function ProductJsonLd({handle}: {handle: string}) {
-  const product = getProductByHandle(handle);
-  if (!product) return null;
-
+function ProductJsonLd({product}: {product: MergedProduct}) {
   const imageUrl = product.image
-    ? `https://maisonmasque.com${product.image}`
+    ? product.image.startsWith('http')
+      ? product.image
+      : `https://maisonmasque.com${product.image}`
     : undefined;
 
   const jsonLd: Record<string, any> = {
@@ -87,18 +108,21 @@ function ProductJsonLd({handle}: {handle: string}) {
       '@type': 'Offer',
       price: product.price.toFixed(2),
       priceCurrency: product.currency,
-      availability: 'https://schema.org/InStock',
+      availability: product.availableForSale
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
       url: `https://maisonmasque.com/products/${product.handle}`,
       seller: {
         '@type': 'Organization',
         name: 'Maison Masque',
       },
     },
-    category: product.collection === 'morning-veil'
-      ? 'Beauty > Skincare > Sunscreen'
-      : product.collection === 'elixir'
-        ? 'Beauty > Skincare > Serums'
-        : 'Beauty > Skincare > Face Masks',
+    category:
+      product.collection === 'morning-veil'
+        ? 'Beauty > Skincare > Sunscreen'
+        : product.collection === 'elixir'
+          ? 'Beauty > Skincare > Serums'
+          : 'Beauty > Skincare > Face Masks',
     sku: product.handle,
   };
 
@@ -114,7 +138,6 @@ function ProductJsonLd({handle}: {handle: string}) {
     };
   }
 
-  // BreadcrumbList
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -128,16 +151,18 @@ function ProductJsonLd({handle}: {handle: string}) {
       {
         '@type': 'ListItem',
         position: 2,
-        name: product.collection === 'morning-veil'
-          ? 'The Morning Veil'
-          : product.collection === 'elixir'
-            ? 'The Elixirs'
-            : 'The Five Rituals',
-        item: product.collection === 'morning-veil'
-          ? 'https://maisonmasque.com/the-morning-veil'
-          : product.collection === 'elixir'
-            ? 'https://maisonmasque.com/collections/elixirs'
-            : 'https://maisonmasque.com/collections/the-five-rituals',
+        name:
+          product.collection === 'morning-veil'
+            ? 'The Morning Veil'
+            : product.collection === 'elixir'
+              ? 'The Elixirs'
+              : 'The Five Rituals',
+        item:
+          product.collection === 'morning-veil'
+            ? 'https://maisonmasque.com/the-morning-veil'
+            : product.collection === 'elixir'
+              ? 'https://maisonmasque.com/collections/elixirs'
+              : 'https://maisonmasque.com/collections/the-five-rituals',
       },
       {
         '@type': 'ListItem',
@@ -163,12 +188,12 @@ function ProductJsonLd({handle}: {handle: string}) {
 }
 
 export default function ProductRoute() {
-  const {handle} = useLoaderData<LoaderData>();
+  const {product} = useLoaderData<typeof loader>();
 
   return (
     <>
-      <ProductJsonLd handle={handle} />
-      <ProductPage handle={handle} />
+      <ProductJsonLd product={product} />
+      <ProductPage product={product} />
     </>
   );
 }
