@@ -1,14 +1,15 @@
 import {Link} from '@remix-run/react';
 import {useEffect, useRef, useCallback, useState} from 'react';
 
+// Mobile uses the same shortened labels as desktop for consistency.
 const menuLinks = [
   {label: 'All', href: '/collections/all'},
-  {label: 'Five Rituals', href: '/collections/the-five-rituals'},
+  {label: 'Rituals', href: '/collections/the-five-rituals'},
   {label: 'Elixirs', href: '/collections/elixirs'},
-  {label: 'Evening Ritual', href: '/products/the-evening-ritual'},
+  {label: 'Evening', href: '/products/the-evening-ritual'},
   {label: 'Complete Ritual', href: '/products/the-complete-ritual'},
-  {label: 'Build Your Bundle', href: '/build-your-own'},
-  {label: 'Skin Quiz', href: '/quiz'},
+  {label: 'Bundles', href: '/build-your-own'},
+  {label: 'Quiz', href: '/quiz'},
   // Morning Veil remains reachable via /the-morning-veil and product cards
 ];
 

@@ -188,21 +188,39 @@ function AllMasksPage({
     [addItem],
   );
 
+  // Editorial header config — overline label, leading title text, and the
+  // italic-gold accent noun that closes each title. Ritual-only uses its own
+  // silk-hero block further below and keeps the existing "Collection I" label.
+  const headerConfig = ritualOnly
+    ? null
+    : collectionFilter === 'elixir'
+      ? {
+          overline: 'Collection II',
+          titleLead: 'The ',
+          titleAccent: 'Elixirs',
+          subtitle:
+            'Polynucleotide elixirs, formulated to deepen the ritual.',
+        }
+      : collectionFilter === 'morning-veil'
+        ? {
+            overline: 'Collection III',
+            titleLead: 'The Morning ',
+            titleAccent: 'Veil',
+            subtitle:
+              'Sun protection as the final step of your morning practice.',
+          }
+        : {
+            overline: 'The Catalogue',
+            titleLead: 'All ',
+            titleAccent: 'Masks',
+            subtitle: `${listed.length} ways to begin your ritual.`,
+          };
+
   const pageTitle = ritualOnly
     ? 'The Five Rituals'
-    : collectionFilter === 'morning-veil'
-      ? 'The Morning Veil'
-      : collectionFilter === 'elixir'
-        ? 'The Elixirs'
-        : 'All Products';
-  const subtitle = ritualOnly
-    ? 'Five masks. Five intentions.'
-    : collectionFilter === 'morning-veil'
-      ? 'Sun protection as the final step of your morning practice.'
-      : collectionFilter === 'elixir'
-        ? 'PDRN elixirs to amplify your ritual practice.'
-        : `${listed.length} ways to begin your ritual`;
-
+    : headerConfig
+      ? `${headerConfig.titleLead}${headerConfig.titleAccent}`
+      : 'All Products';
   return (
     <div>
       {ritualOnly ? (
@@ -221,31 +239,41 @@ function AllMasksPage({
             </h1>
             <div className="h-px w-[60px] bg-gold mx-auto mt-6 mb-8" />
             <p className="text-base text-stone max-w-xl mx-auto leading-relaxed">
-              {subtitle}
+              Five masks. Five intentions.
             </p>
           </section>
         </div>
       ) : null}
 
     <div className="max-w-7xl mx-auto px-6 pt-24 pb-12">
-      {!ritualOnly && (
+      {!ritualOnly && headerConfig && (
         <>
           {/* Breadcrumb */}
-          <nav className="text-xs text-stone mb-8" aria-label="Breadcrumb">
+          <nav className="text-xs text-stone mb-12" aria-label="Breadcrumb">
             <Link to="/" className="hover:text-gold transition-colors">Home</Link>
             <span className="mx-1.5">/</span>
             <span className="text-walnut">{pageTitle}</span>
           </nav>
 
-          {/* Header */}
-          <h1 className="font-display text-4xl">{pageTitle}</h1>
-          <p className="text-sm text-walnut mt-2">{subtitle}</p>
+          {/* Editorial header — overline + italic-gold accent + generous rhythm */}
+          <SectionLabel>{headerConfig.overline}</SectionLabel>
+          <div
+            className="h-px w-[40px] bg-gold mt-5 mb-8"
+            aria-hidden="true"
+          />
+          <h1 className="font-display text-[clamp(40px,6vw,64px)] leading-[1.05] tracking-[-0.01em]">
+            {headerConfig.titleLead}
+            <span className="italic text-gold">{headerConfig.titleAccent}</span>
+          </h1>
+          <p className="text-[15px] text-stone mt-6 max-w-xl leading-[1.7] font-light">
+            {headerConfig.subtitle}
+          </p>
         </>
       )}
 
-      {/* Filter + Sort row */}
+      {/* Filter + Sort row — sand divider above, borderless sort to match chips */}
       {!ritualOnly && (
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-8 mb-8">
+        <div className="mt-16 border-t border-sand pt-8 mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
           {/* Filters */}
           <div className="flex flex-wrap gap-1">
             {FORMATS.map((f) => (
@@ -264,17 +292,30 @@ function AllMasksPage({
             ))}
           </div>
 
-          {/* Sort */}
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="border border-sand bg-cream text-walnut text-xs uppercase tracking-[0.15em] py-2 px-3 font-body appearance-none cursor-pointer focus:outline-none focus:border-gold transition-colors"
-            aria-label="Sort products"
-          >
-            <option value="featured">Featured</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </select>
+          {/* Sort — borderless, matches filter chip typography with a gold caret */}
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] uppercase tracking-[2px] font-semibold text-stone">
+              Sort
+            </span>
+            <div className="relative">
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortOption)}
+                className="appearance-none bg-transparent text-[11px] uppercase tracking-[2px] font-semibold text-ink hover:text-gold pr-5 py-1.5 cursor-pointer focus:outline-none transition-colors"
+                aria-label="Sort products"
+              >
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price · Low to High</option>
+                <option value="price-desc">Price · High to Low</option>
+              </select>
+              <span
+                className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-gold text-[10px]"
+                aria-hidden="true"
+              >
+                ▾
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

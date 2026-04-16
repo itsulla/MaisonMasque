@@ -11,17 +11,19 @@ interface NavLinkItem {
   section?: string;
 }
 
+// Shortened labels keep the row on a single line at lg, match editorial
+// voice, and balance the logo with a 4/3 left-right split.
 const LEFT_LINKS: NavLinkItem[] = [
   {label: 'All', href: '/collections/all'},
-  {label: 'Five Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
+  {label: 'Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
   {label: 'Elixirs', href: '/collections/elixirs'},
-  {label: 'Evening Ritual', href: '/products/the-evening-ritual'},
+  {label: 'Evening', href: '/products/the-evening-ritual'},
 ];
 
 const RIGHT_LINKS: NavLinkItem[] = [
   {label: 'Complete Ritual', href: '/products/the-complete-ritual'},
-  {label: 'Build Your Bundle', href: '/build-your-own'},
-  {label: 'Skin Quiz', href: '/quiz'},
+  {label: 'Bundles', href: '/build-your-own'},
+  {label: 'Quiz', href: '/quiz'},
 ];
 
 export interface NavigationProps {
@@ -91,7 +93,7 @@ export function Navigation({theme = 'light'}: NavigationProps) {
       : 'Bag, empty';
 
   const navLinkClass = (section?: string) =>
-    `text-xs uppercase tracking-[3px] transition-colors duration-300 ${
+    `text-xs uppercase tracking-[3px] whitespace-nowrap transition-colors duration-300 ${
       section && activeSection === section
         ? 'text-gold'
         : isDark
@@ -111,7 +113,7 @@ export function Navigation({theme = 'light'}: NavigationProps) {
         aria-label="Main navigation"
       >
         {/* Left nav links */}
-        <div className="hidden lg:flex items-center gap-8 flex-1">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8 flex-1">
           {LEFT_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -171,7 +173,7 @@ export function Navigation({theme = 'light'}: NavigationProps) {
         </div>
 
         {/* Right nav links */}
-        <div className="hidden lg:flex items-center gap-8 flex-1 justify-end">
+        <div className="hidden lg:flex items-center gap-6 xl:gap-8 flex-1 justify-end">
           {RIGHT_LINKS.map((link) => (
             <Link
               key={link.href}
