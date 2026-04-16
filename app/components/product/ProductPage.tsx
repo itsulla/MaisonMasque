@@ -1,6 +1,7 @@
 import {Link} from '@remix-run/react';
 import {useState} from 'react';
-import {getProductByHandle, getRitualProducts, getMorningVeilProducts, getElixirProducts, type Product} from '~/lib/products';
+import {getProductByHandle, getMorningVeilProducts, getElixirProducts, type Product} from '~/lib/products';
+import type {MergedProduct} from '~/lib/productAdapter';
 import {useCart} from '~/lib/cartContext';
 import {useCurrency} from '~/lib/currencyContext';
 import {Price, PriceWithCompare} from '~/components/shared/Price';
@@ -12,7 +13,14 @@ import {ProductBrandStory} from '~/components/product/ProductBrandStory';
 import {StickyAddToCart} from '~/components/product/StickyAddToCart';
 
 interface ProductPageProps {
-  handle: string;
+  /**
+   * Merged product data — live Shopify Storefront fields (price, image,
+   * title, availability, variant GID) layered over the editorial overlay
+   * in products.ts. See app/lib/productAdapter.ts. Cross-sells, pairings,
+   * and bundle items inside this component still read from products.ts
+   * directly for performance and simplicity.
+   */
+  product: MergedProduct;
 }
 
 const SHIPPING_THRESHOLDS_USD: Record<string, number> = {
@@ -90,27 +98,16 @@ const MORNING_VEIL_PAIRINGS: Record<string, {handle: string; label: string; copy
 // PDRN Trio: Elixir III + Elixir I + Ritual I (all Medicube PDRN)
 const PDRN_TRIO_HANDLES = ['medicube-pdrn-milky-toner', 'medicube-pdrn-peptide-serum', 'medicube-pdrn-gel-mask'];
 
-export function ProductPage({handle}: ProductPageProps) {
-  const product = getProductByHandle(handle);
-  const {addItem, lines, subtotal} = useCart();
-  const {currency, format, convert} = useCurrency();
+export function ProductPage({product}: ProductPageProps) {
+  const handle = product.handle;
+  const {addItem, subtotal} = useCart();
+  const {currency} = useCurrency();
   const [qty, setQty] = useState(1);
   const [howToOpen, setHowToOpen] = useState(false);
   const [pdrnOpen, setPdrnOpen] = useState(false);
   const [centellaOpen, setCentellaOpen] = useState(false);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [glassSkinOpen, setGlassSkinOpen] = useState(false);
-
-  if (!product) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center px-6">
-        <h1 className="font-display text-3xl mb-4">Product not found</h1>
-        <Link to="/" className="text-xs uppercase tracking-[3px] text-gold hover:text-ink transition-colors">
-          Return to the Maison
-        </Link>
-      </div>
-    );
-  }
 
   if (handle === 'the-complete-ritual') {
     return <BundlePage product={product} />;
