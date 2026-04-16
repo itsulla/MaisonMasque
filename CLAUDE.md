@@ -171,7 +171,9 @@ Not in git — state preserved via `pm2 save`.
 ## Known debt + roadmap
 
 ### Deferred (blocks nothing urgent)
-- **Storefront API refactor (Path B)** — `products.ts` hardcoded; Shopify data not fetched at runtime. Blocks real multi-currency at checkout, live inventory, Shopify Markets languages. See chat history for the 5-stage plan (~4 h).
+- **Storefront API refactor (Path B)** — PDP, collections, and sitemap now fetch live Shopify data through `app/lib/productAdapter.ts` (`mergeProduct`), falling back to `products.ts` when Shopify returns null. Homepage child components (FiveRituals, ChooseYourRitual, ElixirsPromo, MorningVeilPromo) still read from `products.ts` directly — revisit when there's visible-buyer reason. Variant GIDs remain in `shopifyCart.ts` VARIANT_MAP for cart mutations (stable, no reason to move yet).
+- **Shopify Markets configuration (unblocks real multi-currency)** — Only HK market exists. Add AU/UK/EU/ZA markets in Shopify Admin → Settings → Markets. Currently `@inContext(country: GB)` silently downgrades to HK and price stays USD. Until Markets is configured, `app/lib/currencyContext.tsx` hardcoded rates (AUD 1.55, GBP 0.79, EUR 0.92, ZAR 18.2) stay in use. Cookies `mm_currency` + `mm_country` already feed server.ts's Storefront client i18n — remove the hardcoded rates once Markets goes live.
+- **Storefront API publication scope** — 8/16 Shopify products aren't published to the Storefront API sales channel. Admin token lacks `write_publications` scope. Add both scopes to the "Claude Operations" custom app and reinstall to publish the remaining 8 + 3 smart collections. The merge adapter masks this today (falls back to products.ts), but Shopify-authored price/title/image changes only reach 8 of 17 products.
 - **Meta Pixel ID** — placeholder; activate when running paid social.
 - **Dead editorial keys** in `productMedia.ts`, `the-morning-veil.tsx` — unreachable, harmless, clean up when touching those files.
 - **Real bundle photography** — Medicube Bundle + Complete Ritual currently use component product images as placeholders.

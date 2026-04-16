@@ -64,11 +64,13 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   // (including 'unlisted' ones — they may still appear via direct URL and we
   // want their data hydrated). Failures fall back to products.ts via the
   // merge adapter, so a Shopify outage doesn't break the collection view.
+  // Hydrogen auto-injects country/language from server.ts i18n config, so
+  // productsByHandlesVariables returns just the per-handle aliases.
   const handles = allProducts.map((p) => p.handle);
   let liveByHandle = new Map<string, ShopifyProduct>();
   try {
     const query = buildProductsByHandlesQuery(handles);
-    const variables = productsByHandlesVariables(handles, 'US', 'EN');
+    const variables = productsByHandlesVariables(handles);
     const response = await context.storefront.query<
       Record<string, ShopifyProduct | null>
     >(query, {variables});

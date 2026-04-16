@@ -63,11 +63,14 @@ export async function loader({params, context}: LoaderFunctionArgs) {
   // Fetch live Storefront API data in parallel with the fallback. Wrapped in
   // try/catch so a Shopify outage (or an unpublished handle) doesn't block
   // rendering — mergeProduct() handles null live data by using products.ts only.
+  // Hydrogen's storefront client auto-injects the `country`/`language`
+  // variables from its i18n config (set per-request in server.ts based on
+  // cookie + Oxygen-Buyer-Country header), so we only pass the handle here.
   let live: ShopifyProduct | null = null;
   try {
     const result = await context.storefront.query<{product: ShopifyProduct | null}>(
       PRODUCT_QUERY,
-      {variables: {handle, country: 'US', language: 'EN'}},
+      {variables: {handle}},
     );
     live = result?.product ?? null;
   } catch (err) {

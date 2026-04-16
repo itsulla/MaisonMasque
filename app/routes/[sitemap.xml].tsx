@@ -76,9 +76,10 @@ export async function loader({context}: LoaderFunctionArgs) {
   let liveProductHandles = new Map<string, string>();
   let liveCollectionHandles = new Map<string, string>();
   try {
+    // country/language auto-injected by Hydrogen from server.ts i18n config.
     const data = await context.storefront.query<SitemapQueryResult>(
       SITEMAP_QUERY,
-      {variables: {first: 250, after: null, country: 'US', language: 'EN'}},
+      {variables: {first: 250, after: null}},
     );
     for (const p of data?.products?.nodes ?? []) {
       liveProductHandles.set(p.handle, p.updatedAt);

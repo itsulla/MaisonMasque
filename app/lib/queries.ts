@@ -71,13 +71,15 @@ ${aliases}
 `;
 }
 
-/** Build the `variables` object that pairs with buildProductsByHandlesQuery. */
+/**
+ * Build the `variables` object that pairs with buildProductsByHandlesQuery.
+ * Country/language are auto-injected by Hydrogen's storefront client from
+ * its i18n config (see server.ts), so callers only need to provide handles.
+ */
 export function productsByHandlesVariables(
   handles: readonly string[],
-  country: string,
-  language: string,
 ): Record<string, string> {
-  const vars: Record<string, string> = {country, language};
+  const vars: Record<string, string> = {};
   handles.forEach((h, i) => {
     vars[`h${i}`] = h;
   });
