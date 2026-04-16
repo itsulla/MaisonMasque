@@ -5,3 +5,6 @@ dist/
 public/images/products/brand/
 
 .shopify
+.env.backup
+server.dev.js.bak
+server.prod.js.bak
