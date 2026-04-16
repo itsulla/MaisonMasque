@@ -15,7 +15,7 @@
  */
 
 import type {Product as EditorialProduct} from './products';
-import {getProductByHandle} from './products';
+import {getProductByHandle, products as allEditorial} from './products';
 
 export interface MoneyV2 {
   amount: string;
@@ -145,4 +145,37 @@ export function mergeProduct(
     descriptionHtml: live.descriptionHtml,
     _source: 'shopify',
   };
+}
+
+/**
+ * Bulk-merge: given a map of Shopify-returned products (keyed by handle),
+ * produce a MergedProduct for every handle in the local catalogue. Handles
+ * with Shopify data get live overlays; the rest fall back. Preserves the
+ * order of the local products.ts array (editorial curation) rather than
+ * Shopify's default.
+ */
+export function mergeAllProducts(
+  liveByHandle: Map<string, ShopifyProduct>,
+): MergedProduct[] {
+  return allEditorial
+    .map((editorial) => mergeProduct(editorial.handle, liveByHandle.get(editorial.handle) ?? null))
+    .filter((p): p is MergedProduct => p !== null);
+}
+
+/**
+ * Extract `{p0, p1, ...}` aliases from a buildProductsByHandlesQuery response
+ * into a handle-keyed map. Null entries are omitted. The caller passes the
+ * same `handles` array used to build the query so aliases align.
+ */
+export function aliasResponseToMap(
+  handles: readonly string[],
+  response: Record<string, ShopifyProduct | null> | null | undefined,
+): Map<string, ShopifyProduct> {
+  const map = new Map<string, ShopifyProduct>();
+  if (!response) return map;
+  handles.forEach((handle, i) => {
+    const product = response[`p${i}`];
+    if (product) map.set(handle, product);
+  });
+  return map;
 }

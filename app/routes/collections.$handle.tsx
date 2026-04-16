@@ -1,19 +1,21 @@
 import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
-import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {useState, useMemo, useCallback} from 'react';
-import {products as allProducts, getRitualProducts, type Product} from '~/lib/products';
-
-// Collection pages must exclude 'unlisted' products — these are reachable
-// via direct URL only, not through collection browsing.
-const listedProducts = allProducts.filter((p) => !p.tags?.includes('unlisted'));
+import {products as allProducts, type Product} from '~/lib/products';
+import {
+  aliasResponseToMap,
+  mergeAllProducts,
+  type MergedProduct,
+  type ShopifyProduct,
+} from '~/lib/productAdapter';
+import {
+  buildProductsByHandlesQuery,
+  productsByHandlesVariables,
+} from '~/lib/queries';
 import {useCart} from '~/lib/cartContext';
 import {Price} from '~/components/shared/Price';
 import {SectionLabel} from '~/components/shared/SectionLabel';
 import {RitualNumeral} from '~/components/shared/RitualNumeral';
-
-interface LoaderData {
-  handle: string;
-}
 
 const FORMATS = ['All', 'Sheet Mask', 'Hydrogel', 'Overnight', 'Wrapping Mask', 'Elixir', 'Sunscreen', 'Bundle'] as const;
 type SortOption = 'featured' | 'price-asc' | 'price-desc';
@@ -55,28 +57,51 @@ export const meta: MetaFunction = ({params}) => {
   ];
 };
 
-export async function loader({params}: LoaderFunctionArgs): Promise<LoaderData> {
-  return {handle: params.handle ?? 'all'};
+export async function loader({params, context}: LoaderFunctionArgs) {
+  const handle = params.handle ?? 'all';
+
+  // Batch-fetch live Shopify data for every editorial handle in the catalogue
+  // (including 'unlisted' ones — they may still appear via direct URL and we
+  // want their data hydrated). Failures fall back to products.ts via the
+  // merge adapter, so a Shopify outage doesn't break the collection view.
+  const handles = allProducts.map((p) => p.handle);
+  let liveByHandle = new Map<string, ShopifyProduct>();
+  try {
+    const query = buildProductsByHandlesQuery(handles);
+    const variables = productsByHandlesVariables(handles, 'US', 'EN');
+    const response = await context.storefront.query<
+      Record<string, ShopifyProduct | null>
+    >(query, {variables});
+    liveByHandle = aliasResponseToMap(handles, response);
+  } catch (err) {
+    console.warn('[collections.$handle] Storefront batch query failed, falling back:', err);
+  }
+
+  const merged = mergeAllProducts(liveByHandle);
+  return json({handle, products: merged});
 }
 
 export default function CollectionRoute() {
-  const {handle} = useLoaderData<LoaderData>();
+  const {handle, products} = useLoaderData<typeof loader>();
 
-  // For "all" and "the-five-rituals", render the full collection page
+  // Collection pages must exclude 'unlisted' products — these are reachable
+  // via direct URL only, not through collection browsing.
+  const listed = products.filter((p) => !p.tags?.includes('unlisted'));
+
   if (handle === 'all') {
-    return <AllMasksPage />;
+    return <AllMasksPage listed={listed} />;
   }
 
   if (handle === 'the-five-rituals') {
-    return <AllMasksPage ritualOnly />;
+    return <AllMasksPage listed={listed} ritualOnly />;
   }
 
   if (handle === 'morning-veil') {
-    return <AllMasksPage collectionFilter="morning-veil" />;
+    return <AllMasksPage listed={listed} collectionFilter="morning-veil" />;
   }
 
   if (handle === 'elixirs') {
-    return <AllMasksPage collectionFilter="elixir" />;
+    return <AllMasksPage listed={listed} collectionFilter="elixir" />;
   }
 
   // Fallback for unknown collections
@@ -96,16 +121,24 @@ export default function CollectionRoute() {
   );
 }
 
-function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: boolean; collectionFilter?: string}) {
+function AllMasksPage({
+  listed,
+  ritualOnly = false,
+  collectionFilter,
+}: {
+  listed: MergedProduct[];
+  ritualOnly?: boolean;
+  collectionFilter?: string;
+}) {
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [sort, setSort] = useState<SortOption>('featured');
   const {addItem} = useCart();
 
   const baseProducts = ritualOnly
-    ? getRitualProducts()
+    ? listed.filter((p) => p.collection === 'ritual')
     : collectionFilter
-      ? listedProducts.filter((p) => p.collection === collectionFilter)
-      : listedProducts;
+      ? listed.filter((p) => p.collection === collectionFilter)
+      : listed;
 
   const filtered = useMemo(() => {
     let list = baseProducts;
@@ -166,7 +199,7 @@ function AllMasksPage({ritualOnly = false, collectionFilter}: {ritualOnly?: bool
       ? 'Sun protection as the final step of your morning practice.'
       : collectionFilter === 'elixir'
         ? 'PDRN elixirs to amplify your ritual practice.'
-        : `${listedProducts.length} ways to begin your ritual`;
+        : `${listed.length} ways to begin your ritual`;
 
   return (
     <div>
