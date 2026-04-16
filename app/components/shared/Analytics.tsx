@@ -11,7 +11,7 @@ import {useLocation} from '@remix-run/react';
  * On each SPA route change, we re-fire both pageview events so the funnel
  * stays clean (Remix doesn't reload the document between routes).
  */
-const GA4_ID = 'G-XXXXXXXXXX';
+const GA4_ID = 'G-78D06T2CLG';
 const META_PIXEL_ID = '0000000000000000';
 
 declare global {
