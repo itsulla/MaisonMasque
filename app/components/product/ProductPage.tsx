@@ -9,6 +9,7 @@ import {ElixirCrossSell} from '~/components/shared/ElixirCrossSell';
 import {GiftTierNudge} from '~/components/shared/GiftTierNudge';
 import {RitualNumeral} from '~/components/shared/RitualNumeral';
 import {ProductBrandStory} from '~/components/product/ProductBrandStory';
+import {StickyAddToCart} from '~/components/product/StickyAddToCart';
 
 interface ProductPageProps {
   handle: string;
@@ -37,12 +38,12 @@ const ELIXIR_PAIRINGS: Record<string, {pairings: {handle: string; label: string;
       },
     ],
   },
-  'celdyque-pdrn-egf-serum': {
+  'anua-pdrn-ha-capsule-serum': {
     pairings: [
       {
         handle: 'medicube-pdrn-gel-mask',
         label: 'Ritual I \u2014 Restore',
-        copy: 'PDRN elixir meets PDRN mask.',
+        copy: 'PDRN serum meets PDRN mask.',
       },
       {
         handle: 'abib-heartleaf-gummy-mask',
@@ -66,11 +67,11 @@ const GLASS_SKIN_EXPLANATION =
 const NUMBUZIN_NOTE =
   'Numbuzin names each product by number \u2014 each targeting a specific skin concern. No.3 is their glass skin formula, designed for pore refinement and texture smoothing.';
 
-// Ritual IV pairing: Elixir II at same $18 price point
+// Ritual IV pairing: Anua PDRN Capsule Serum (replaces deleted CELDYQUE)
 const RITUAL_IV_PAIRING = {
-  handle: 'celdyque-pdrn-egf-serum',
-  label: 'Elixir II \u2014 Fortify',
-  copy: 'Both at the same price point. Together they\u2019re one step from complimentary shipping.',
+  handle: 'anua-pdrn-ha-capsule-serum',
+  label: 'Anua PDRN Capsule Serum',
+  copy: 'Pore-refining mask meets PDRN-regenerating serum. Two steps to glass skin.',
 };
 
 const MORNING_VEIL_PAIRINGS: Record<string, {handle: string; label: string; copy: string}> = {
@@ -79,10 +80,10 @@ const MORNING_VEIL_PAIRINGS: Record<string, {handle: string; label: string; copy
     label: 'Ritual I — Restore',
     copy: 'Morning protection meets evening renewal.',
   },
-  'heimish-artless-glow-tinted-sunscreen': {
+  'medicube-pdrn-sun-cream': {
     handle: 'abib-heartleaf-gummy-mask',
     label: 'Ritual III — Calm',
-    copy: 'Morning radiance meets evening calm.',
+    copy: 'Morning PDRN protection meets evening PDRN calm.',
   },
 };
 
@@ -518,6 +519,7 @@ export function ProductPage({handle}: ProductPageProps) {
 
           {/* Add to cart — ink bg (NOT gold, gold is reserved for bundle) */}
           <button
+            id="primary-atc"
             type="button"
             onClick={handleAddToCart}
             className="w-full h-[52px] mt-4 bg-ink text-cream font-display text-[13px] uppercase tracking-[3px] hover:bg-espresso transition-colors duration-300"
@@ -869,6 +871,15 @@ export function ProductPage({handle}: ProductPageProps) {
           </div>
         </section>
       )}
+
+      {/* Sticky Add-to-Cart — slides in once primary ATC scrolls out of view */}
+      <StickyAddToCart
+        product={product}
+        qty={qty}
+        onAddToCart={handleAddToCart}
+        anchorId="primary-atc"
+        label={isMorningVeil || isElixir ? 'Add to bag' : 'Add to ritual'}
+      />
     </>
   );
 }
@@ -992,7 +1003,7 @@ function BundlePage({product}: {product: Product}) {
             <Price amount={product.compareAtPrice} className="font-display text-base text-stone line-through" />
             <Price amount={product.price} className="font-display text-3xl text-ink" />
             {product.savingsPercent && (
-              <span className="text-[10px] uppercase font-semibold tracking-wide px-2 py-0.5 rounded-sm" style={{background: '#E1F5EE', color: '#085041'}}>
+              <span className="badge-save">
                 Save {product.savingsPercent}%
               </span>
             )}

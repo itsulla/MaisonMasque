@@ -56,6 +56,13 @@ export const meta: MetaFunction<typeof loader> = ({data, params}) => {
 
 export async function loader({params}: LoaderFunctionArgs): Promise<LoaderData> {
   const handle = params.handle ?? '';
+  // Return proper 404 for handles that no longer exist in the catalogue.
+  // Without this, deleted products render an empty shell with HTTP 200,
+  // which crawlers index as live content.
+  const product = getProductByHandle(handle);
+  if (!product) {
+    throw new Response('Product not found', {status: 404});
+  }
   return {handle};
 }
 

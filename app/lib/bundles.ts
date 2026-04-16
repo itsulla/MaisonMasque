@@ -73,8 +73,9 @@ export const bundles: Bundle[] = [
         label: 'Choose 2 elixirs',
         eligibleHandles: [
           'medicube-pdrn-peptide-serum',
-          'celdyque-pdrn-egf-serum',
           'medicube-pdrn-milky-toner',
+          'anua-pdrn-ha-capsule-serum',
+          'centellian24-madeca-pdrn',
         ],
       },
     ],
@@ -111,8 +112,9 @@ export const bundles: Bundle[] = [
         label: 'Choose 2 elixirs',
         eligibleHandles: [
           'medicube-pdrn-peptide-serum',
-          'celdyque-pdrn-egf-serum',
           'medicube-pdrn-milky-toner',
+          'anua-pdrn-ha-capsule-serum',
+          'centellian24-madeca-pdrn',
         ],
       },
       {
@@ -121,7 +123,7 @@ export const bundles: Bundle[] = [
         label: 'Choose 1 Morning Veil',
         eligibleHandles: [
           'beauty-of-joseon-relief-sun',
-          'heimish-artless-glow-tinted-sunscreen',
+          'medicube-pdrn-sun-cream',
         ],
       },
     ],

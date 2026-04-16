@@ -128,8 +128,8 @@ function PDRNTrioCrossSell({handleAdd}: {handleAdd: (p: Product) => void}) {
   const trioTotal = trioProducts.reduce((s, p) => s + p.price, 0);
   const elixirIII = getProductByHandle('medicube-pdrn-milky-toner');
   const elixirI = getProductByHandle('medicube-pdrn-peptide-serum');
-  const elixirII = getProductByHandle('celdyque-pdrn-egf-serum');
-  const featuredElixirs = [elixirIII, elixirI].filter(Boolean) as Product[];
+  const anuaCapsule = getProductByHandle('anua-pdrn-ha-capsule-serum');
+  const featuredElixirs = [elixirIII, elixirI, anuaCapsule].filter(Boolean) as Product[];
 
   const addAllThree = () => {
     for (const p of trioProducts) handleAdd(p);

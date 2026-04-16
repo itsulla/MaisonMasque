@@ -10,17 +10,26 @@ const STOREFRONT_TOKEN = '3a5a4b00408e0b920fd5fa764080e8fb';
 
 // ── Handle → Shopify Variant GID mapping ────────────────────────────────────
 
+// Source of truth: Shopify Admin API. Keep in sync with products.ts.
+// `the-complete-ritual` is a bundle composed client-side from individual
+// products — it doesn't have its own Shopify variant.
 const VARIANT_MAP: Record<string, string> = {
-  'medicube-pdrn-gel-mask': 'gid://shopify/ProductVariant/51956063535415',
-  'medicube-wrapping-mask': 'gid://shopify/ProductVariant/51956064321847',
-  'abib-heartleaf-gummy-mask': 'gid://shopify/ProductVariant/51956065665335',
-  'numbuzin-no3-pore-mask': 'gid://shopify/ProductVariant/51956065730871',
+  'medicube-pdrn-gel-mask':          'gid://shopify/ProductVariant/51956063535415',
+  'medicube-wrapping-mask':          'gid://shopify/ProductVariant/51956064321847',
+  'abib-heartleaf-gummy-mask':       'gid://shopify/ProductVariant/51956065665335',
+  'numbuzin-no3-pore-mask':          'gid://shopify/ProductVariant/51956065730871',
   'skin1004-centella-sleeping-pack': 'gid://shopify/ProductVariant/51956065861943',
-  'beauty-of-joseon-relief-sun': 'gid://shopify/ProductVariant/51956065993015',
-  'heimish-artless-glow-tinted-sunscreen': 'gid://shopify/ProductVariant/51956066255159',
-  'medicube-pdrn-peptide-serum': 'gid://shopify/ProductVariant/51956066418999',
-  'celdyque-pdrn-egf-serum': 'gid://shopify/ProductVariant/51956072579383',
-  'medicube-pdrn-milky-toner': 'gid://shopify/ProductVariant/51956072743223',
+  'beauty-of-joseon-relief-sun':     'gid://shopify/ProductVariant/51956065993015',
+  'medicube-pdrn-peptide-serum':     'gid://shopify/ProductVariant/51956066418999',
+  'medicube-pdrn-milky-toner':       'gid://shopify/ProductVariant/51956072743223',
+  'medicube-pdrn-tension-mask':      'gid://shopify/ProductVariant/51991907762487',
+  'medicube-pdrn-caffeine-wrapping': 'gid://shopify/ProductVariant/51991907828023',
+  'medicube-pdrn-whip-cleanser':     'gid://shopify/ProductVariant/51991907959095',
+  'medicube-pdrn-sun-cream':         'gid://shopify/ProductVariant/51991908188471',
+  'centellian24-madeca-pdrn':        'gid://shopify/ProductVariant/51991908417847',
+  'anua-pdrn-ha-capsule-serum':      'gid://shopify/ProductVariant/51991908679991',
+  'mixsoon-bean-cleansing-oil':      'gid://shopify/ProductVariant/51991908745527',
+  'the-medicube-bundle':             'gid://shopify/ProductVariant/51991971561783',
 };
 
 export function getVariantId(handle: string): string | null {

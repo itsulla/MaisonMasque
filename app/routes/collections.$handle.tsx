@@ -18,19 +18,26 @@ interface LoaderData {
 const FORMATS = ['All', 'Sheet Mask', 'Hydrogel', 'Overnight', 'Wrapping Mask', 'Elixir', 'Sunscreen', 'Bundle'] as const;
 type SortOption = 'featured' | 'price-asc' | 'price-desc';
 
-// Curated display order — interleaves categories for natural browsing
+// Curated display order — interleaves categories for natural browsing.
+// Keep in sync with app/lib/products.ts (17 listed products).
 const FEATURED_ORDER: string[] = [
-  'medicube-pdrn-gel-mask',        // Ritual I
-  'medicube-pdrn-milky-toner',    // Elixir III (PDRN toner — prep)
-  'medicube-pdrn-peptide-serum',   // Elixir I (PDRN serum — amplify)
-  'medicube-wrapping-mask',        // Ritual II
-  'abib-heartleaf-gummy-mask',     // Ritual III
-  'celdyque-pdrn-egf-serum',      // Elixir II
-  'numbuzin-no3-pore-mask',        // Ritual IV
-  'skin1004-centella-sleeping-pack', // Ritual V
-  'beauty-of-joseon-relief-sun',   // Morning Veil
-  'heimish-artless-glow-tinted-sunscreen',
-  'the-complete-ritual',           // Bundle last
+  'medicube-pdrn-gel-mask',              // Ritual I
+  'medicube-pdrn-milky-toner',           // Elixir III (PDRN toner — prep)
+  'medicube-pdrn-peptide-serum',         // Elixir I (PDRN serum — amplify)
+  'medicube-wrapping-mask',              // Ritual II
+  'abib-heartleaf-gummy-mask',           // Ritual III
+  'anua-pdrn-ha-capsule-serum',          // Anua PDRN serum
+  'numbuzin-no3-pore-mask',              // Ritual IV
+  'skin1004-centella-sleeping-pack',     // Ritual V
+  'centellian24-madeca-pdrn',            // Centellian24 cream
+  'medicube-pdrn-caffeine-wrapping',     // Overnight mask
+  'medicube-pdrn-tension-mask',          // Sheet mask (contouring)
+  'medicube-pdrn-whip-cleanser',         // Cleanse
+  'mixsoon-bean-cleansing-oil',          // Oil cleanse
+  'beauty-of-joseon-relief-sun',         // Morning Veil (clear)
+  'medicube-pdrn-sun-cream',             // Morning Veil (tone-up)
+  'the-medicube-bundle',                 // Medicube bundle
+  'the-complete-ritual',                 // Flagship bundle last
 ];
 
 export const meta: MetaFunction = ({params}) => {
