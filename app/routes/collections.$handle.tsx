@@ -13,6 +13,7 @@ import {
   productsByHandlesVariables,
 } from '~/lib/queries';
 import {useCart} from '~/lib/cartContext';
+import {canonicalLink} from '~/lib/seo';
 import {Price} from '~/components/shared/Price';
 import {SectionLabel} from '~/components/shared/SectionLabel';
 import {RitualNumeral} from '~/components/shared/RitualNumeral';
@@ -42,7 +43,7 @@ const FEATURED_ORDER: string[] = [
   'the-complete-ritual',                 // Flagship bundle last
 ];
 
-export const meta: MetaFunction = ({params}) => {
+export const meta: MetaFunction = ({params, location}) => {
   const handle = params.handle ?? 'all';
   const titles: Record<string, string> = {
     'all': 'All Products | Maison Masque',
@@ -54,6 +55,7 @@ export const meta: MetaFunction = ({params}) => {
   return [
     {title},
     {name: 'description', content: 'Shop curated Korean skincare at Maison Masque.'},
+    canonicalLink(location.pathname),
   ];
 };
 

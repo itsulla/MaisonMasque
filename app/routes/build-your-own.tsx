@@ -1,7 +1,8 @@
 import {type MetaFunction} from '@remix-run/react';
 import {BundleBuilder} from '~/components/home/BundleBuilder';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({location}) => {
   return [
     {title: 'Build Your Own Ritual | Maison Masque'},
     {
@@ -9,11 +10,7 @@ export const meta: MetaFunction = () => {
       content:
         'Compose your own ritual from our curated masks, elixirs and Morning Veil. Four or more items unlocks 15% off.',
     },
-    {
-      tagName: 'link',
-      rel: 'canonical',
-      href: 'https://maisonmasque.com/build-your-own',
-    },
+    canonicalLink(location.pathname),
   ];
 };
 

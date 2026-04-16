@@ -12,11 +12,21 @@ import {products} from '~/lib/products';
 
 const BASE = 'https://maisonmasque.com';
 
+// NOTE: collection URLs must match real handles served by
+// collections.$handle.tsx — otherwise Google sees a soft-404 and
+// flags the sitemap entry as "Page with redirect" or indexes a bad
+// canonical. `/collections/the-evening-ritual` and
+// `/collections/the-morning-veil` previously pointed at routes that
+// do not exist (the real routes are `/products/the-evening-ritual`
+// and the `/the-morning-veil` landing page). Product URLs are emitted
+// by the product loop below, so no need to duplicate them here.
 const STATIC_ROUTES: Array<[string, string, string]> = [
   ['/', '1.0', 'daily'],
-  ['/collections/the-evening-ritual', '0.7', 'weekly'],
-  ['/collections/the-morning-veil', '0.7', 'weekly'],
-  ['/collections/elixirs', '0.7', 'weekly'],
+  ['/collections/all', '0.8', 'weekly'],
+  ['/collections/the-five-rituals', '0.9', 'weekly'],
+  ['/collections/elixirs', '0.8', 'weekly'],
+  ['/collections/morning-veil', '0.8', 'weekly'],
+  ['/the-morning-veil', '0.7', 'weekly'],
   ['/products/the-complete-ritual', '0.9', 'weekly'],
   ['/the-practice', '0.7', 'weekly'],
   ['/philosophy', '0.7', 'weekly'],
@@ -63,10 +73,14 @@ interface SitemapQueryResult {
 
 export async function loader({context}: LoaderFunctionArgs) {
   const entries: string[] = [];
+  // Track emitted paths so live collection handles that duplicate a static
+  // route (e.g. `elixirs`) aren't written twice.
+  const emittedPaths = new Set<string>();
 
   // Homepage + static pages
   for (const [route, priority, changefreq] of STATIC_ROUTES) {
     entries.push(urlEntry(route, priority, changefreq));
+    emittedPaths.add(route);
   }
 
   // Products + collections from Shopify, with fallback to products.ts if the
@@ -99,16 +113,18 @@ export async function loader({context}: LoaderFunctionArgs) {
     ...products.map((p) => p.handle),
   ]);
   for (const handle of allProductHandles) {
+    const path = `/products/${handle}`;
+    if (emittedPaths.has(path)) continue;
     const lastmod = liveProductHandles.get(handle);
-    entries.push(
-      urlEntry(`/products/${handle}`, '0.9', 'weekly', lastmod),
-    );
+    entries.push(urlEntry(path, '0.9', 'weekly', lastmod));
+    emittedPaths.add(path);
   }
 
   for (const [handle, lastmod] of liveCollectionHandles) {
-    entries.push(
-      urlEntry(`/collections/${handle}`, '0.7', 'weekly', lastmod),
-    );
+    const path = `/collections/${handle}`;
+    if (emittedPaths.has(path)) continue;
+    entries.push(urlEntry(path, '0.7', 'weekly', lastmod));
+    emittedPaths.add(path);
   }
 
   // Legal pages (lower priority, rarely change)

@@ -1,6 +1,7 @@
 import type {MetaFunction} from '@remix-run/react';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = ({location}) => [
   {title: 'Our Philosophy — Maison Masque'},
   {
     name: 'description',
@@ -13,6 +14,7 @@ export const meta: MetaFunction = () => [
     content:
       'Curated Korean skincare rituals from Hong Kong. Skincare as ceremony.',
   },
+  canonicalLink(location.pathname),
   {property: 'og:type', content: 'article'},
 ];
 

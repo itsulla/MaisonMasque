@@ -1,5 +1,6 @@
 import {Link, useLoaderData, type MetaFunction} from '@remix-run/react';
 import type {LoaderFunctionArgs} from '@remix-run/server-runtime';
+import {canonicalLink} from '~/lib/seo';
 
 interface LoaderData {
   handle: string;
@@ -112,13 +113,14 @@ const POLICIES: Record<string, {title: string; sections: {heading: string; body:
   },
 };
 
-export const meta: MetaFunction<typeof loader> = ({data}) => {
+export const meta: MetaFunction<typeof loader> = ({data, location}) => {
   const handle = data?.handle ?? '';
   const policy = POLICIES[handle];
   const title = policy ? `${policy.title} | Maison Masque` : 'Policy | Maison Masque';
   return [
     {title},
     {name: 'description', content: `${policy?.title ?? 'Legal policy'} for Maison Masque.`},
+    canonicalLink(location.pathname),
   ];
 };
 

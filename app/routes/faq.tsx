@@ -1,9 +1,11 @@
 import {type MetaFunction} from '@remix-run/react';
 import {SectionLabel} from '~/components/shared/SectionLabel';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = ({location}) => [
   {title: 'FAQ | Maison Masque'},
   {name: 'description', content: 'Frequently asked questions about Maison Masque — shipping, returns, ingredients, subscriptions, and the ritual.'},
+  canonicalLink(location.pathname),
 ];
 
 const FAQ_SECTIONS = [

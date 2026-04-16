@@ -1,10 +1,12 @@
 import {type MetaFunction} from '@remix-run/react';
 import {Link} from '@remix-run/react';
 import {SectionLabel} from '~/components/shared/SectionLabel';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = ({location}) => [
   {title: 'The Practice | Maison Masque'},
   {name: 'description', content: 'How to perform a ritual — the Maison Masque guide to sheet masking as ceremony, not routine.'},
+  canonicalLink(location.pathname),
 ];
 
 const STEPS = [

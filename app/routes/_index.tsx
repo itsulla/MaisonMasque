@@ -1,4 +1,5 @@
 import {type MetaFunction} from '@remix-run/react';
+import {canonicalLink} from '~/lib/seo';
 import {Hero} from '~/components/home/Hero';
 import {Divider} from '~/components/shared/Divider';
 import {FiveRituals} from '~/components/home/FiveRituals';
@@ -10,7 +11,7 @@ import {ChooseYourRitual} from '~/components/home/ChooseYourRitual';
 import {MorningVeilPromo} from '~/components/home/MorningVeilPromo';
 import {ElixirsPromo} from '~/components/home/ElixirsPromo';
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({location}) => {
   return [
     {
       title: 'Maison Masque | Korean Sheet Masks | The House of Masks',
@@ -20,6 +21,7 @@ export const meta: MetaFunction = () => {
       content:
         'Curated Korean sheet masks from Medicube, Anua, and SKIN1004. Shipped worldwide to Australia, UK, Europe and South Africa.',
     },
+    canonicalLink(location.pathname),
   ];
 };
 

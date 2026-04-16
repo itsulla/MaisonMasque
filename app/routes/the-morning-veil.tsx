@@ -2,8 +2,9 @@ import {Link, type MetaFunction} from '@remix-run/react';
 import {getMorningVeilProducts, getRitualProducts, type Product} from '~/lib/products';
 import {Price} from '~/components/shared/Price';
 import {useCurrency} from '~/lib/currencyContext';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction = ({location}) => {
   return [
     {title: 'The Morning Veil — Korean Sunscreens | Maison Masque'},
     {
@@ -18,6 +19,7 @@ export const meta: MetaFunction = () => {
         'Two weightless Korean sunscreens chosen for luminous protection. The final step before you face the world.',
     },
     {property: 'og:type', content: 'website'},
+    canonicalLink(location.pathname),
   ];
 };
 

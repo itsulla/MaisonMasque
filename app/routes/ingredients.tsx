@@ -1,10 +1,12 @@
 import {type MetaFunction} from '@remix-run/react';
 import {Link} from '@remix-run/react';
 import {SectionLabel} from '~/components/shared/SectionLabel';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = ({location}) => [
   {title: 'Ingredient Glossary | Maison Masque'},
   {name: 'description', content: 'Every hero ingredient in the Maison Masque collection — what it is, what it does, and which products contain it.'},
+  canonicalLink(location.pathname),
 ];
 
 interface IngredientEntry {

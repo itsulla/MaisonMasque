@@ -1,9 +1,11 @@
 import {type MetaFunction} from '@remix-run/react';
 import {SectionLabel} from '~/components/shared/SectionLabel';
+import {canonicalLink} from '~/lib/seo';
 
-export const meta: MetaFunction = () => [
+export const meta: MetaFunction = ({location}) => [
   {title: 'Contact the Maison | Maison Masque'},
   {name: 'description', content: 'Get in touch with Maison Masque — The House of Masks. We respond to every message personally.'},
+  canonicalLink(location.pathname),
 ];
 
 export default function ContactPage() {
