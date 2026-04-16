@@ -18,8 +18,10 @@ import {EmailPopup} from '~/components/shared/EmailPopup';
 import {BackToTop} from '~/components/shared/BackToTop';
 import {SocialProofToast} from '~/components/shared/SocialProofToast';
 import {AnalyticsScripts, AnalyticsPageview} from '~/components/shared/Analytics';
+import {QuizDrawer} from '~/components/shared/QuizDrawer';
 import {CartProvider} from '~/lib/cartContext';
 import {CurrencyProvider} from '~/lib/currencyContext';
+import {QuizDrawerProvider} from '~/lib/quizDrawerContext';
 import appStyles from '~/styles/app.css?url';
 
 export function links() {
@@ -185,7 +187,10 @@ export default function App() {
       >
         <CurrencyProvider>
           <CartProvider>
-            <AppShell />
+            <QuizDrawerProvider>
+              <AppShell />
+              <QuizDrawer />
+            </QuizDrawerProvider>
           </CartProvider>
         </CurrencyProvider>
         <AnalyticsPageview />

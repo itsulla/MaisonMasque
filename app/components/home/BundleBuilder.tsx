@@ -42,18 +42,18 @@ function TierMessage({count, className = ''}: {count: number; className?: string
     >
       {reached ? (
         <>
-          <span className="text-gold font-semibold">15% off</span>
+          <span className="text-gold-deep font-semibold">15% off</span>
           <span> applied — your ritual is complete</span>
         </>
       ) : count === 0 ? (
         <>
           Choose <span className="text-ink">4 or more items</span> to unlock{' '}
-          <span className="text-gold font-semibold">15% off</span>
+          <span className="text-gold-deep font-semibold">15% off</span>
         </>
       ) : (
         <>
           Add <span className="text-ink">{remaining} more</span> to unlock{' '}
-          <span className="text-gold font-semibold">15% off</span>
+          <span className="text-gold-deep font-semibold">15% off</span>
         </>
       )}
     </p>
@@ -356,7 +356,7 @@ export function BundleBuilder() {
 
               {/* Content */}
               <div className="p-4">
-                <p className="text-[11px] uppercase tracking-[4px] text-gold font-semibold">
+                <p className="text-[11px] uppercase tracking-[4px] text-gold-deep font-semibold">
                   {isSunscreen ? 'Morning Veil' : isElixirProduct ? 'Elixir' : `Ritual ${product.ritualNumber}`}
                 </p>
                 <p className="text-[10px] uppercase tracking-[2px] text-stone mt-1">
@@ -453,10 +453,7 @@ export function BundleBuilder() {
             </span>
           )}
           {canAdd && savings > 0 && (
-            <span
-              className="text-[11px] uppercase font-semibold tracking-wide px-2 py-0.5 rounded-sm"
-              style={{background: '#E1F5EE', color: '#085041'}}
-            >
+            <span className="badge-save">
               You save {format(savings)}
             </span>
           )}

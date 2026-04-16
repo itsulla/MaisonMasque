@@ -3,7 +3,7 @@ import {Link} from '@remix-run/react';
 export function MorningVeilPromo() {
   return (
     <section
-      className="reveal py-16 lg:py-[120px] px-6"
+      className="py-12 lg:py-20 px-6"
       style={{background: '#F8F3EA'}}
       aria-label="The Morning Veil"
     >

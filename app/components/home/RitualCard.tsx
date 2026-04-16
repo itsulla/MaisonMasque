@@ -47,11 +47,11 @@ export function RitualCard({product, index, className = '', ritualNumeral, onQui
       onMouseLeave={handleMouseLeave}
       className={`ritual p-0 group hover:bg-ivory transition-all duration-500 will-change-transform ${className}`.trim()}
     >
-      {/* Image area — links to PDP */}
+      {/* Image area — links to PDP; subtle 1.03 scale on parent hover */}
       <Link to={`/products/${product.handle}`} className="block">
-        <div className="ritual-img product-tile-bg h-[280px] overflow-hidden relative">
+        <div className="ritual-img ritual-image-wrap product-tile-bg h-[280px] relative">
           <div
-            className="ritual-img-inner w-full h-full transition-transform duration-[3000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform group-hover:scale-[1.05]"
+            className="ritual-img-inner w-full h-full transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform group-hover:scale-[1.03]"
             style={{['--drift' as string]: drift}}
           >
             {product.image ? (
@@ -79,7 +79,7 @@ export function RitualCard({product, index, className = '', ritualNumeral, onQui
       <div className="p-5">
         {/* Ritual label */}
         {product.ritualNumber && (
-          <p className="ritual-num text-[11px] uppercase tracking-[4px] font-semibold text-gold">
+          <p className="ritual-num text-[11px] uppercase tracking-[4px] font-semibold text-gold-deep">
             Ritual {product.ritualNumber} &mdash; {product.ritualName}
           </p>
         )}

@@ -38,10 +38,7 @@ export function PriceWithCompare({
       )}
       <span className={priceClassName}>{format(amount)}</span>
       {hasSavings && (
-        <span
-          className={`text-[10px] uppercase font-semibold tracking-wide px-2 py-0.5 rounded-sm ${badgeClassName}`}
-          style={{background: '#E1F5EE', color: '#085041'}}
-        >
+        <span className={`badge-save ${badgeClassName}`.trim()}>
           Save {format(savings)}
         </span>
       )}

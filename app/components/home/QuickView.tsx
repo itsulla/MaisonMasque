@@ -118,7 +118,7 @@ export function QuickView({product, isOpen, onClose, onAddToCart}: QuickViewProp
           {/* Right — Details */}
           <div className="quickview-details p-8 flex flex-col">
             {product.ritualNumber && (
-              <p className="text-[11px] uppercase tracking-[4px] font-semibold text-gold">
+              <p className="text-[11px] uppercase tracking-[4px] font-semibold text-gold-deep">
                 Ritual {product.ritualNumber} &mdash; {product.ritualName}
               </p>
             )}

@@ -1,5 +1,6 @@
 import {SectionLabel} from '~/components/shared/SectionLabel';
 import {Button} from '~/components/shared/Button';
+import {useQuizDrawer} from '~/lib/quizDrawerContext';
 
 const H1_WORDS = [
   {text: 'The', italic: false},
@@ -8,6 +9,7 @@ const H1_WORDS = [
 ];
 
 export function Hero() {
+  const {openDrawer} = useQuizDrawer();
   return (
     <div className="silk-hero-bg">
       <section id="hero" className="hero-reveal pt-[100px] pb-20 text-center max-w-3xl mx-auto px-6">
@@ -47,7 +49,7 @@ export function Hero() {
           <Button variant="dark" href="#rituals">
             Explore the collection
           </Button>
-          <Button variant="outline" href="/quiz">
+          <Button variant="outline" onClick={openDrawer}>
             Take the skin ritual quiz
           </Button>
         </div>

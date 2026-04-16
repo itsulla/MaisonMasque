@@ -247,27 +247,28 @@ body::after {
 .hero-word {
   display: inline-block;
   transform: translateY(100%);
-  animation: heroWordReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  /* delay set via inline style per word: 0.9s, 1.2s, 1.5s */
+  /* 1.2s silk reveal per word with cubic-bezier "out-expo". Delays 0.9/1.2/1.5s via inline style. */
+  animation: heroWordReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero-gold-line {
   transform-origin: center;
   transform: scaleX(0);
-  animation: lineGrow 1s ease both;
-  animation-delay: 1.6s;
+  animation: lineGrow 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 2.2s;
 }
 
 .hero-subtitle {
   opacity: 0;
-  animation: heroSubtitleIn 0.8s ease both;
-  animation-delay: 2.2s;
+  /* Fades in "immediately after" final word reveal completes (1.5s + 1.2s = 2.7s) */
+  animation: heroSubtitleIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 2.7s;
 }
 
 .hero-ctas {
   opacity: 0;
-  animation: heroCtasIn 0.5s ease both;
-  animation-delay: 2.8s;
+  animation: heroCtasIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 3.2s;
 }
 
 /* ---- Reduced motion: show everything immediately ---- */
@@ -327,7 +328,7 @@ body::after {
 }
 
 .section-label {
-  color: var(--color-gold);
+  color: var(--color-gold-deep); /* AA-compliant (5.1:1 vs cream) */
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 4px;
@@ -464,14 +465,19 @@ body::after {
   }
 }
 
-/* ---- Scroll-triggered reveal ---- */
-.reveal {
+/* ---- Scroll-triggered reveal ----
+ * Default state: visible. The `.reveal` animation applies only when JS has
+ * explicitly added the `.reveal-primed` class (via a mounted observer).
+ * Without an observer attached, content renders normally instead of being
+ * permanently invisible.
+ */
+.reveal.reveal-primed {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.reveal.visible {
+.reveal.reveal-primed.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -930,4 +936,139 @@ body::after {
 .product-tile-bg {
   background: linear-gradient(135deg, #F3EFE6 0%, #FAF8F3 50%, #E8E2D6 100%);
   padding: 24px;
+}
+
+/* ── Phase 1 · Softened ritual cards ────────────────────────────────────────
+ * Replaces the 1px sand dividers with airy spacing + a whisper of shadow on
+ * hover. rgba(0,0,0,0.04) is at the edge of the threshold — you should feel it,
+ * not see it.
+ */
+.ritual-soft-card {
+  transition:
+    box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--color-cream);
+}
+.ritual-soft-card:hover {
+  box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.04), 0 2px 8px -2px rgba(0, 0, 0, 0.02);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ritual-soft-card { transition: none; }
+}
+
+/* ── Phase 2.2 · Product image hover scale ──────────────────────────────────
+ * Image wrapper must have overflow:hidden. Image scales 1.03 on parent hover.
+ */
+.ritual-image-wrap {
+  overflow: hidden;
+}
+.ritual-image-wrap img,
+.ritual-image-wrap .product-tile-bg {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.ritual-soft-card:hover .ritual-image-wrap img,
+.ritual-soft-card:hover .ritual-image-wrap .product-tile-bg {
+  transform: scale(1.03);
+}
+@media (prefers-reduced-motion: reduce) {
+  .ritual-image-wrap img,
+  .ritual-image-wrap .product-tile-bg { transition: none; }
+  .ritual-soft-card:hover .ritual-image-wrap img,
+  .ritual-soft-card:hover .ritual-image-wrap .product-tile-bg { transform: none; }
+}
+
+/* ── Phase 1.4 · Quiet save-badge ───────────────────────────────────────────
+ * Replaces the solid green pill with a 1px gold-deep outline on transparent.
+ */
+.badge-save {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  color: var(--color-gold-deep);
+  background: transparent;
+  border: 1px solid var(--color-gold-deep);
+  border-radius: 2px;
+  line-height: 1.4;
+}
+
+/* ── Phase 2.3 · Practice-step staggered reveal ─────────────────────────────
+ * IntersectionObserver adds .practice-visible to each step. Stagger via
+ * inline --stagger var (ms).
+ */
+.practice-step {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--stagger, 0ms),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) var(--stagger, 0ms);
+  will-change: opacity, transform;
+}
+.practice-step.practice-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .practice-step {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Phase 3.1 · Sticky Add-to-Cart bar ─────────────────────────────────────
+ * Slides up from the bottom of the viewport when the primary ATC scrolls out.
+ */
+.sticky-atc {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--color-cream);
+  border-top: 1px solid var(--color-sand);
+  box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.06);
+}
+.sticky-atc.is-visible {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticky-atc { transition: none; }
+}
+
+/* ── Phase 3.2 · Quiz side drawer ───────────────────────────────────────────
+ * Right-side offcanvas, full-screen on mobile. Focus-trap in JS.
+ */
+.quiz-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(26, 23, 20, 0);
+  transition: background 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.quiz-drawer-backdrop.is-open {
+  background: rgba(26, 23, 20, 0.35);
+  pointer-events: auto;
+}
+.quiz-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(480px, 100vw);
+  z-index: 61;
+  background: var(--color-cream);
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  box-shadow: -12px 0 40px -12px rgba(0, 0, 0, 0.18);
+}
+.quiz-drawer.is-open {
+  transform: translateX(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz-drawer,
+  .quiz-drawer-backdrop { transition: none; }
 }

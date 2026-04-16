@@ -1,3 +1,4 @@
+import {useEffect, useRef} from 'react';
 import {SectionLabel} from '~/components/shared/SectionLabel';
 
 const steps = [
@@ -27,9 +28,40 @@ const steps = [
   },
 ];
 
+/**
+ * "How to perform a ritual" — four steps that fade up in sequence as the
+ * section enters the viewport. Uses IntersectionObserver once; after the
+ * reveal triggers, the observer disconnects. Respects prefers-reduced-motion
+ * (CSS takes care of the fallback by forcing opacity:1).
+ */
 export function RitualGuide() {
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || typeof IntersectionObserver === 'undefined') return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const stepEls = grid.querySelectorAll<HTMLElement>('.practice-step');
+          stepEls.forEach((el, i) => {
+            el.style.setProperty('--stagger', `${i * 150}ms`);
+            el.classList.add('practice-visible');
+          });
+          io.disconnect();
+          break;
+        }
+      },
+      {threshold: 0.25},
+    );
+    io.observe(grid);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <section id="practice" aria-label="The Practice" className="py-20 px-6 max-w-7xl mx-auto">
+    <section id="practice" aria-label="The Practice" className="py-14 px-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center mb-12">
         <SectionLabel>The Practice</SectionLabel>
@@ -38,15 +70,13 @@ export function RitualGuide() {
         </h2>
       </div>
 
-      {/* Steps grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border border-sand">
-        {steps.map((step, index) => (
-          <div
-            key={step.numeral}
-            className={`p-8 text-center ${
-              index < steps.length - 1 ? 'border-r border-sand' : ''
-            }`}
-          >
+      {/* Steps grid — airy, no dividers, staggered fade-up on viewport entry */}
+      <div
+        ref={gridRef}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-4"
+      >
+        {steps.map((step) => (
+          <div key={step.numeral} className="practice-step p-8 text-center">
             <div className="font-display text-5xl text-sand">
               {step.numeral}
             </div>

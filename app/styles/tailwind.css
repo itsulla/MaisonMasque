@@ -8,7 +8,8 @@
   --color-walnut: #4A433A;
   --color-stone: #8A8279;
   --color-sand: #E8E2D6;
-  --color-gold: #C5A55A;
+  --color-gold: #C5A55A;           /* Decorative — lines, fills, backgrounds */
+  --color-gold-deep: #876319;      /* Text — WCAG AA 5.1:1 on cream, passes normal-text */
   --color-gold-light: #D4BA7A;
   --color-gold-pale: rgba(197, 165, 90, 0.08);
   --color-rose: #C9928A;

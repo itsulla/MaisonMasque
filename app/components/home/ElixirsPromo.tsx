@@ -35,7 +35,7 @@ export function ElixirsPromo() {
   const trioTotal = trioProducts.reduce((s, p) => s + p.price, 0);
 
   return (
-    <section className="py-14 lg:py-[100px] px-6" aria-label="The Elixirs">
+    <section className="py-12 lg:py-20 px-6" aria-label="The Elixirs">
       <div className="max-w-3xl mx-auto text-center mb-10">
         <SectionLabel>The Elixirs</SectionLabel>
         <h2 className="font-display text-[clamp(24px,3.5vw,42px)] mt-3">

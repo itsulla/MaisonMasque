@@ -42,7 +42,7 @@ export function FiveRituals() {
   );
 
   return (
-    <section id="rituals" className="py-20 px-6 max-w-7xl mx-auto">
+    <section id="rituals" className="py-14 px-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center mb-12">
         <SectionLabel>The Five Rituals</SectionLabel>
@@ -54,8 +54,8 @@ export function FiveRituals() {
         </p>
       </div>
 
-      {/* Product grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 border border-sand">
+      {/* Product grid — airy, no dividers; subtle hover shadow per card */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         {ritualProducts.map((product, index) => (
           <RitualCard
             key={product.handle}
@@ -64,9 +64,7 @@ export function FiveRituals() {
             ritualNumeral={product.ritualNumeral}
             onQuickView={handleQuickView}
             onAddToCart={handleAddToCart}
-            className={
-              index < ritualProducts.length - 1 ? 'border-r border-sand' : ''
-            }
+            className="ritual-soft-card"
           />
         ))}
       </div>
@@ -92,10 +90,7 @@ export function FiveRituals() {
                 <Price amount={bundle.compareAtPrice} className="font-display text-base text-stone line-through" />
                 <Price amount={bundle.price} className="font-display text-[22px] text-ink" />
                 {bundle.savingsPercent && (
-                  <span
-                    className="text-[10px] uppercase font-semibold tracking-wide px-2 py-0.5 rounded-sm"
-                    style={{background: '#E1F5EE', color: '#085041'}}
-                  >
+                  <span className="badge-save">
                     Save {bundle.savingsPercent}%
                   </span>
                 )}

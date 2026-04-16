@@ -43,7 +43,7 @@ export function ChooseYourRitual() {
 
   return (
     <section
-      className="py-24 px-6 max-w-7xl mx-auto"
+      className="py-16 px-6 max-w-7xl mx-auto"
       aria-label="Choose your ritual"
     >
       {/* Header */}

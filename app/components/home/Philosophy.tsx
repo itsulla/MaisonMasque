@@ -2,7 +2,7 @@ import {Seal} from '~/components/shared/Seal';
 
 export function Philosophy() {
   return (
-    <section id="philosophy" aria-label="Our Philosophy" className="philosophy in-view py-24 px-6 overflow-hidden relative">
+    <section id="philosophy" aria-label="Our Philosophy" className="philosophy in-view py-16 px-6 overflow-hidden relative">
       {/* Gradient transition from cream to ink */}
       <div className="absolute inset-0 bg-gradient-to-b from-cream via-ink/90 to-ink -z-10" />
 

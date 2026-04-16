@@ -2,11 +2,12 @@ import {Link} from '@remix-run/react';
 import {useEffect, useRef, useCallback, useState} from 'react';
 
 const menuLinks = [
-  {label: 'The Five Rituals', href: '/collections/the-five-rituals'},
-  {label: 'The Elixirs', href: '/collections/elixirs'},
-  {label: 'The Morning Veil', href: '/the-morning-veil'},
-  {label: 'The Evening Ritual', href: '/products/the-evening-ritual'},
-  {label: 'The Complete Ritual', href: '/products/the-complete-ritual'},
+  {label: 'All', href: '/collections/all'},
+  {label: 'Five Rituals', href: '/collections/the-five-rituals'},
+  {label: 'Elixirs', href: '/collections/elixirs'},
+  {label: 'Morning Veil', href: '/the-morning-veil'},
+  {label: 'Evening Ritual', href: '/products/the-evening-ritual'},
+  {label: 'Complete Ritual', href: '/products/the-complete-ritual'},
   {label: 'Build Your Own', href: '/build-your-own'},
   {label: 'Skin Quiz', href: '/quiz'},
 ];
