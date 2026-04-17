@@ -23,6 +23,7 @@ export interface CartLine extends ShopifyCartLine {
   ritualLabel?: string;
   bundleHandle?: string;
   selectedItems?: BundleSelectedItem[];
+  // sellingPlan is inherited from ShopifyCartLine — {id, name} | null
 }
 
 interface CartContextValue {
@@ -35,7 +36,7 @@ interface CartContextValue {
   loading: boolean;
   open: () => void;
   close: () => void;
-  addItem: (product: any, qty?: number) => void;
+  addItem: (product: any, qty?: number, sellingPlanId?: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   removeItem: (id: string) => void;
 }
@@ -123,7 +124,7 @@ export function CartProvider({children}: {children: React.ReactNode}) {
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
-  const addItem = useCallback(async (product: any, qty = 1) => {
+  const addItem = useCallback(async (product: any, qty = 1, sellingPlanId?: string) => {
     const variantId = getVariantId(product.handle);
     if (!variantId) {
       console.error(`No variant ID for handle: ${product.handle}`);
@@ -132,7 +133,11 @@ export function CartProvider({children}: {children: React.ReactNode}) {
 
     setLoading(true);
     try {
-      const lineInput = {merchandiseId: variantId, quantity: qty};
+      const lineInput: {merchandiseId: string; quantity: number; sellingPlanId?: string} = {
+        merchandiseId: variantId,
+        quantity: qty,
+      };
+      if (sellingPlanId) lineInput.sellingPlanId = sellingPlanId;
       let cart;
 
       if (cartIdRef.current) {

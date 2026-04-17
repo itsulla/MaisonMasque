@@ -69,9 +69,9 @@ Source of truth: `app/lib/products.ts`. Handles match Shopify + VARIANT_MAP + co
 |---|---|---|
 | Ritual I | `medicube-pdrn-gel-mask` | $22 |
 | Ritual II | `medicube-wrapping-mask` | $26 |
-| Ritual III | `abib-heartleaf-gummy-mask` | $28 |
+| Ritual III | `abib-heartleaf-gummy-mask` | $30 |
 | Ritual IV | `numbuzin-no3-pore-mask` | $22 |
-| Ritual V | `skin1004-centella-sleeping-pack` | $20 |
+| Ritual V | `skin1004-centella-sleeping-pack` | $23 |
 | Mask | `medicube-pdrn-tension-mask` | $17.99 |
 | Mask | `medicube-pdrn-caffeine-wrapping` | $17.99 |
 | Elixir I | `medicube-pdrn-peptide-serum` | $24 |

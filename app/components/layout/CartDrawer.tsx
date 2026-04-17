@@ -254,7 +254,10 @@ export function CartDrawer() {
                 <span className="text-sm text-ink">Subtotal</span>
                 <span className="font-display text-sm text-ink">{formatPrice(subtotal)}</span>
               </div>
-              <p className="text-xs text-walnut mb-4">Complimentary shipping on qualifying orders</p>
+              <p className="text-xs text-walnut mb-1">Complimentary shipping from $45</p>
+              <p className="text-[10px] text-stone mb-4 leading-relaxed">
+                Asia $45 · UK &amp; SE Asia $55 · Oceania &amp; N. America $65 · EU $75
+              </p>
               <div className="w-[60px] h-px bg-gold mx-auto mb-4" />
               {checkoutUrl ? (
                 <a
@@ -324,6 +327,16 @@ function CartLineItem({line, isLast}: {line: CartLine; isLast: boolean}) {
           <p className="text-[10px] uppercase tracking-[3px] text-stone mt-0.5">{line.vendor}</p>
         )}
         {line.ritualLabel && <p className="text-[10px] text-gold mt-0.5">{line.ritualLabel}</p>}
+
+        {/* Subscription badge */}
+        {line.sellingPlan && (
+          <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[2px] text-gold mt-1 bg-ivory border border-gold/30 rounded-full px-2 py-0.5">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 10 15 10"/>
+            </svg>
+            Subscription · save 10%
+          </div>
+        )}
 
         {/* Bundle contents — indented list of included items */}
         {isBundle && line.selectedItems && line.selectedItems.length > 0 && (

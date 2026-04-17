@@ -1,27 +1,29 @@
+// Aligned with live Shopify delivery profile tiers.
+// SG/JP/AE match gift-tier 1 ($45). SE-Asia & UK: $55. Oceania/NA: $65. EU: $75.
 const shippingData = [
   {
-    code: 'AU',
-    country: 'Australia',
-    delivery: '5\u20138 days',
-    threshold: 'Complimentary over $60',
+    code: 'SG',
+    country: 'Singapore & Japan',
+    delivery: '5\u20139 days',
+    threshold: 'Complimentary over $45',
   },
   {
     code: 'GB',
-    country: 'United Kingdom',
-    delivery: '7\u201312 days',
-    threshold: 'Complimentary over \u00A345',
+    country: 'UK & SE Asia',
+    delivery: '5\u20139 days',
+    threshold: 'Complimentary over $55',
+  },
+  {
+    code: 'AU',
+    country: 'Australia & N. America',
+    delivery: '8\u201314 days',
+    threshold: 'Complimentary over $65',
   },
   {
     code: 'EU',
     country: 'European Union',
-    delivery: '8\u201314 days',
-    threshold: 'Complimentary over \u20AC50',
-  },
-  {
-    code: 'ZA',
-    country: 'South Africa',
-    delivery: '10\u201316 days',
-    threshold: 'Complimentary over R750',
+    delivery: '6\u201310 days',
+    threshold: 'Complimentary over $75',
   },
 ];
 

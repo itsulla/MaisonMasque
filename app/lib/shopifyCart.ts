@@ -36,6 +36,19 @@ export function getVariantId(handle: string): string | null {
   return VARIANT_MAP[handle] ?? null;
 }
 
+// ── Subscription ────────────────────────────────────────────────────────────
+
+/**
+ * Default "Subscribe & Save" selling plan — every 2 months, 10% off.
+ * Live in Shopify admin under "La Cérémonie" selling plan group.
+ * All 17 products are eligible.
+ */
+export const SUBSCRIBE_SAVE_PLAN_ID =
+  'gid://shopify/SellingPlan/12358353207';
+
+export const SUBSCRIBE_SAVE_DISCOUNT_PCT = 10;
+export const SUBSCRIBE_SAVE_CADENCE_LABEL = 'Every 2 months';
+
 // ── GraphQL helper ──────────────────────────────────────────────────────────
 
 async function storefrontFetch(query: string, variables?: Record<string, unknown>) {
@@ -73,6 +86,9 @@ const CART_FRAGMENT = `
           cost {
             totalAmount { amount currencyCode }
           }
+          sellingPlanAllocation {
+            sellingPlan { id name }
+          }
           merchandise {
             ... on ProductVariant {
               id
@@ -95,7 +111,13 @@ const CART_FRAGMENT = `
 
 // ── Mutations ───────────────────────────────────────────────────────────────
 
-export async function createCart(lines?: {merchandiseId: string; quantity: number}[]) {
+export interface CartLineInputShape {
+  merchandiseId: string;
+  quantity: number;
+  sellingPlanId?: string;
+}
+
+export async function createCart(lines?: CartLineInputShape[]) {
   const data = await storefrontFetch(`
     mutation cartCreate($input: CartInput) {
       cartCreate(input: $input) {
@@ -112,7 +134,7 @@ export async function createCart(lines?: {merchandiseId: string; quantity: numbe
 
 export async function addCartLines(
   cartId: string,
-  lines: {merchandiseId: string; quantity: number}[],
+  lines: CartLineInputShape[],
 ) {
   const data = await storefrontFetch(`
     mutation cartLinesAdd($cartId: ID!, $lines: [CartLineInput!]!) {
@@ -175,6 +197,7 @@ export interface ShopifyCartLine {
   quantity: number;
   price: {amount: string; currencyCode: string};
   image?: {url: string; altText: string | null} | null;
+  sellingPlan?: {id: string; name: string} | null;
 }
 
 export function parseShopifyCart(cart: any): {
@@ -195,6 +218,7 @@ export function parseShopifyCart(cart: any): {
       quantity: node.quantity,
       price: merch.price,
       image: merch.image,
+      sellingPlan: node.sellingPlanAllocation?.sellingPlan ?? null,
     };
   });
 

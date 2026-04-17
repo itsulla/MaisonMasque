@@ -11,6 +11,8 @@ import {GiftTierNudge} from '~/components/shared/GiftTierNudge';
 import {RitualNumeral} from '~/components/shared/RitualNumeral';
 import {ProductBrandStory} from '~/components/product/ProductBrandStory';
 import {StickyAddToCart} from '~/components/product/StickyAddToCart';
+import {SubscriptionToggle, type PurchaseMode} from '~/components/product/SubscriptionToggle';
+import {SUBSCRIBE_SAVE_PLAN_ID} from '~/lib/shopifyCart';
 
 interface ProductPageProps {
   /**
@@ -103,6 +105,9 @@ export function ProductPage({product}: ProductPageProps) {
   const {addItem, subtotal} = useCart();
   const {currency} = useCurrency();
   const [qty, setQty] = useState(1);
+  // Subscribe & Save default = subscribe. Drops ~10% of product margin but
+  // trades it for ~4-6× LTV (subscription order value compounds).
+  const [purchaseMode, setPurchaseMode] = useState<PurchaseMode>('subscribe');
   const [howToOpen, setHowToOpen] = useState(false);
   const [pdrnOpen, setPdrnOpen] = useState(false);
   const [centellaOpen, setCentellaOpen] = useState(false);
@@ -138,6 +143,7 @@ export function ProductPage({product}: ProductPageProps) {
         priceRange: {minVariantPrice: {amount: product.price.toFixed(2), currencyCode: product.currency}},
       },
       qty,
+      purchaseMode === 'subscribe' ? SUBSCRIBE_SAVE_PLAN_ID : undefined,
     );
   };
 
@@ -507,8 +513,15 @@ export function ProductPage({product}: ProductPageProps) {
             </div>
           )}
 
+          {/* Subscription toggle — default is subscribe & save 10% */}
+          <SubscriptionToggle
+            price={product.price}
+            mode={purchaseMode}
+            onChange={setPurchaseMode}
+          />
+
           {/* Quantity selector */}
-          <div className="flex items-center border border-sand h-10 w-fit mt-8">
+          <div className="flex items-center border border-sand h-10 w-fit mt-4">
             <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="w-10 h-full flex items-center justify-center text-ink hover:text-gold transition-colors" aria-label="Decrease quantity">&minus;</button>
             <span className="w-10 h-full flex items-center justify-center text-sm font-body border-x border-sand">{qty}</span>
             <button type="button" onClick={() => setQty((q) => Math.min(10, q + 1))} className="w-10 h-full flex items-center justify-center text-ink hover:text-gold transition-colors" aria-label="Increase quantity">+</button>
@@ -520,7 +533,7 @@ export function ProductPage({product}: ProductPageProps) {
             type="button"
             onClick={handleAddToCart}
             className="w-full h-[52px] mt-4 bg-ink text-cream font-display text-[13px] uppercase tracking-[3px] hover:bg-espresso transition-colors duration-300"
-            aria-label={`Add ${qty} ${product.name} to bag`}
+            aria-label={`Add ${qty} ${product.name} to bag${purchaseMode === 'subscribe' ? ' (subscription)' : ''}`}
           >
             {isMorningVeil || isElixir ? 'Add to bag' : 'Add to ritual'}
           </button>

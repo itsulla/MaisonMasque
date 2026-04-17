@@ -84,8 +84,8 @@ export const products: Product[] = [
     brand: 'Abib',
     name: 'Heartleaf Gummy Sheet Mask',
     subtitle: '10 sheets per pack \u00b7 27ml per sheet',
-    price: 28.0,
-    compareAtPrice: 40.0,
+    price: 30.0,
+    compareAtPrice: 42.0,
     currency: 'USD',
     description:
       'A high-adhesion microfibre sheet steeped in heartleaf extract and Abib\u2019s Micro TECA cica complex. The gummy-textured sheet clings to every curve of the face, while liposome-encapsulated actives deliver a fresh, non-sticky, long-lasting calm. Redness fades. Irritation quietens. Stillness returns.',
@@ -134,8 +134,8 @@ export const products: Product[] = [
     brand: 'SKIN1004',
     name: 'Madagascar Centella Hyalu-Cica Sleeping Pack',
     subtitle: '100ml',
-    price: 20.0,
-    compareAtPrice: 26.0,
+    price: 23.0,
+    compareAtPrice: 30.0,
     currency: 'USD',
     description:
       'An overnight ceremony of repair. Madagascar-sourced Centella Asiatica and hyaluronic acid work through the night to calm, hydrate, and rebuild \u2014 so you wake to skin that feels renewed.',
