@@ -130,6 +130,10 @@ function PDRNTrioCrossSell({handleAdd}: {handleAdd: (p: Product) => void}) {
   const elixirI = getProductByHandle('medicube-pdrn-peptide-serum');
   const anuaCapsule = getProductByHandle('anua-pdrn-ha-capsule-serum');
   const featuredElixirs = [elixirIII, elixirI, anuaCapsule].filter(Boolean) as Product[];
+  // Fourth elixir shown under "Also in The Elixirs" (previously referenced a
+  // stale `elixirII` variable that was removed during curation — caused a ReferenceError
+  // SSR 500 on the Ritual I PDP which renders PDRNTrioCrossSell).
+  const alsoAvailable = getProductByHandle('centellian24-madeca-pdrn');
 
   const addAllThree = () => {
     for (const p of trioProducts) handleAdd(p);
@@ -231,50 +235,50 @@ function PDRNTrioCrossSell({handleAdd}: {handleAdd: (p: Product) => void}) {
         </div>
 
         {/* Also in The Elixirs — Elixir II */}
-        {elixirII && (
+        {alsoAvailable && (
           <div className="mt-10">
             <p className="text-[11px] uppercase tracking-[4px] text-stone font-semibold text-center mb-5">
               Also in The Elixirs
             </p>
             <div className="max-w-sm mx-auto border border-sand">
-              <div className={`h-[160px] bg-gradient-to-b ${GRADIENT_MAP[elixirII.heroColor] ?? 'from-sand/30 to-ivory'} flex items-center justify-center overflow-hidden`}>
-                {elixirII.image ? (
+              <div className={`h-[160px] bg-gradient-to-b ${GRADIENT_MAP[alsoAvailable.heroColor] ?? 'from-sand/30 to-ivory'} flex items-center justify-center overflow-hidden`}>
+                {alsoAvailable.image ? (
                   <img
-                    src={elixirII.image}
-                    alt={`${elixirII.brand} ${elixirII.name} - Maison Masque`}
+                    src={alsoAvailable.image}
+                    alt={`${alsoAvailable.brand} ${alsoAvailable.name} - Maison Masque`}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
                   />
                 ) : (
-                  <span className="font-display text-5xl select-none" style={{color: `${elixirII.heroColor}28`}}>
+                  <span className="font-display text-5xl select-none" style={{color: `${alsoAvailable.heroColor}28`}}>
                     ✧
                   </span>
                 )}
               </div>
               <div className="p-5 text-center">
                 <p className="text-[10px] uppercase tracking-[2px] text-stone">
-                  {elixirII.brand}
+                  {alsoAvailable.brand}
                 </p>
                 <h3 className="font-display text-base mt-1">
-                  <Link to={`/products/${elixirII.handle}`} className="hover:text-gold transition-colors">
-                    {elixirII.name}
+                  <Link to={`/products/${alsoAvailable.handle}`} className="hover:text-gold transition-colors">
+                    {alsoAvailable.name}
                   </Link>
                 </h3>
                 <p className="text-xs text-walnut mt-1.5 leading-relaxed">
                   12% PDRN concentration &mdash; the highest in our collection.
                 </p>
                 <div className="flex items-baseline justify-center gap-2 mt-3">
-                  {elixirII.compareAtPrice > elixirII.price && (
-                    <Price amount={elixirII.compareAtPrice} className="font-display text-sm text-stone line-through" />
+                  {alsoAvailable.compareAtPrice > alsoAvailable.price && (
+                    <Price amount={alsoAvailable.compareAtPrice} className="font-display text-sm text-stone line-through" />
                   )}
-                  <Price amount={elixirII.price} className="font-display text-lg" />
+                  <Price amount={alsoAvailable.price} className="font-display text-lg" />
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleAdd(elixirII)}
+                  onClick={() => handleAdd(alsoAvailable)}
                   className="mt-4 border border-sand text-ink text-[11px] uppercase tracking-[0.2em] font-semibold px-8 py-3 hover:border-gold hover:text-gold transition-colors"
-                  aria-label={`Add ${elixirII.name} to order`}
+                  aria-label={`Add ${alsoAvailable.name} to order`}
                 >
                   Add to order
                 </button>
