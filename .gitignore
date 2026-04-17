@@ -8,3 +8,4 @@ public/images/products/brand/
 .env.backup
 server.dev.js.bak
 server.prod.js.bak
+.claude/
