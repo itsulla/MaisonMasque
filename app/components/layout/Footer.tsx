@@ -75,7 +75,7 @@ export function Footer({theme = 'light'}: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-12">
           {/* Brand column */}
           <div>
-            <span className={`font-display text-lg uppercase tracking-[4px] ${isDark ? 'text-cream' : 'text-ink'}`}>
+            <span className={`font-logo text-lg uppercase tracking-[3px] ${isDark ? 'text-cream' : 'text-ink'}`}>
               MAISON MASQUE
             </span>
             <p className={`text-[9px] uppercase tracking-[3px] mt-1 ${isDark ? 'text-cream/50' : 'text-stone'}`}>

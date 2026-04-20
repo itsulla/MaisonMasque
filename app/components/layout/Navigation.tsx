@@ -211,7 +211,7 @@ export function Navigation({theme = 'light'}: NavigationProps) {
             className="nav-logo-link block transition-transform duration-300 ease-in-out"
             style={{transform: scrolled ? 'scale(0.9)' : 'scale(1)'}}
           >
-            <span className={`font-display text-[28px] uppercase tracking-[4px] ${isDark ? 'text-cream' : 'text-ink'}`}>
+            <span className={`font-logo text-[30px] uppercase tracking-[3px] ${isDark ? 'text-cream' : 'text-ink'}`}>
               MAISON MASQUE
             </span>
           </Link>

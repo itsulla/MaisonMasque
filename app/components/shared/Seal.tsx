@@ -16,9 +16,11 @@ export function Seal({className = ''}: SealProps) {
       {/* Inner circle — pulses at 1.6s delay */}
       <div className="seal-circle-inner absolute w-32 h-32 rounded-full border border-gold/40" />
 
-      {/* Center content — never pulses */}
+      {/* Center content — never pulses.
+          MM monogram = wordmark → font-logo + tracking-[0.05em].
+          "The House of Masks" stays on the display face (italic). */}
       <div className="relative flex flex-col items-center justify-center text-center">
-        <span className="font-display text-4xl text-gold">MM</span>
+        <span className="font-logo text-4xl text-gold tracking-[0.05em]">MM</span>
         <span className="text-[9px] uppercase tracking-[3px] text-gold/60 mt-1">
           Est. MMXXVI
         </span>

@@ -345,8 +345,18 @@ body {
 .heading-display {
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 4rem);
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+}
+
+/* Cormorant Garamond's italic is heavier than Playfair's — where italic
+   is used for emphasis on display text, nudge the weight up so it reads
+   equal to the surrounding roman instead of visibly lighter. */
+.font-display em,
+h1 em,
+h2 em,
+h3 em {
+  font-weight: 500;
 }
 
 /* ---- Ritual card entrance ---- */
@@ -838,10 +848,12 @@ body {
   z-index: 1;
 }
 
-/* Larger hero heading scale for the silk hero */
+/* Larger hero heading scale for the silk hero.
+   Cormorant runs narrower than Playfair, so the size is bumped and the
+   tracking relaxed to compensate. */
 .silk-hero-title {
-  font-size: clamp(56px, 8.5vw, 96px);
-  letter-spacing: -0.02em;
+  font-size: clamp(64px, 9.5vw, 112px);
+  letter-spacing: -0.015em;
   line-height: 1.05;
 }
 

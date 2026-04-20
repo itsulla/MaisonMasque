@@ -25,8 +25,11 @@ import {QuizDrawerProvider} from '~/lib/quizDrawerContext';
 import appStyles from '~/styles/app.css?url';
 
 export function links() {
+  // Cormorant Garamond (display) + Italiana (wordmark only) + Manrope (body/UI).
+  // Playfair Display removed in this commit — if any stale references remain
+  // they'll fall through the var(--font-display) serif stack.
   const googleFontsUrl =
-    'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Manrope:wght@300;400;500;600&display=swap';
+    'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Italiana&family=Manrope:wght@300;400;500;600&display=swap';
 
   return [
     {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
@@ -43,6 +46,17 @@ export function links() {
     {
       rel: 'stylesheet',
       href: googleFontsUrl,
+    },
+    // Preload Cormorant Garamond 500 woff2 to stabilise LCP — hero H1
+    // uses this weight. URL taken from the Google Fonts CSS at the time
+    // of this commit; Google rotates these hashes occasionally so if it
+    // 404s in the future, update from the current stylesheet response.
+    {
+      rel: 'preload',
+      href: 'https://fonts.gstatic.com/s/cormorantgaramond/v16/co3YmX5slCNuHLi8bLeY9MK7whWMhyjornFLsS6V7w.woff2',
+      as: 'font',
+      type: 'font/woff2',
+      crossOrigin: 'anonymous' as const,
     },
     {rel: 'stylesheet', href: appStyles},
   ];
@@ -86,7 +100,7 @@ export function HydrateFallback() {
         <div className="noise-overlay" aria-hidden="true" />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <span className="font-display text-2xl uppercase tracking-[4px] text-ink">
+            <span className="font-logo text-2xl uppercase tracking-[3px] text-ink">
               MAISON MASQUE
             </span>
             <div className="mt-4 w-8 h-px bg-gold mx-auto animate-pulse" />

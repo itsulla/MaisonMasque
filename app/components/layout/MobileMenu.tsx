@@ -96,7 +96,7 @@ export function MobileMenu() {
 
         {/* Logo */}
         <div className="mb-10">
-          <span className="font-display text-lg uppercase tracking-[4px] text-ink">
+          <span className="font-logo text-lg uppercase tracking-[3px] text-ink">
             MAISON MASQUE
           </span>
         </div>

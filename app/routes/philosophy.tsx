@@ -80,7 +80,7 @@ function WaxSealMonogram() {
           x="60"
           y="74"
           textAnchor="middle"
-          fontFamily="'Playfair Display', serif"
+          fontFamily="'Italiana', 'Cormorant Garamond', serif"
           fontSize="42"
           fontWeight="500"
           fill="#C5A55A"

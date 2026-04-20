@@ -15,6 +15,7 @@
   --color-rose: #C9928A;
   --color-sage: #8FA68E;
 
-  --font-display: "Playfair Display", serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-logo: "Italiana", "Cormorant Garamond", serif;
   --font-body: "Manrope", sans-serif;
 }
