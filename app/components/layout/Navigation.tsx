@@ -22,13 +22,17 @@ const RIGHT_LINKS: NavLinkItem[] = [
   {label: 'Quiz', href: '/quiz'},
 ];
 
-// Mega-menu content for "The Rituals"
+// Mega-menu content for "The Rituals".
+// Handles + ritual names must match the live catalog in app/lib/products.ts —
+// previously pointed at aspirational handles (biodance / torriden / mediheal)
+// that produced 5 × 404 in production. Keep this in sync with the `ritualName`
+// field on each product record.
 const MEGA_BY_RITUAL: {numeral: string; name: string; href: string}[] = [
-  {numeral: 'I',   name: 'Restore',    href: '/products/biodance-collagen'},
-  {numeral: 'II',  name: 'Drench',     href: '/products/torriden-dive-in'},
-  {numeral: 'III', name: 'Calm',       href: '/products/abib-heartleaf'},
-  {numeral: 'IV',  name: 'Replenish',  href: '/products/mediheal-nmf'},
-  {numeral: 'V',   name: 'Illuminate', href: '/products/numbuzin-no3'},
+  {numeral: 'I',   name: 'Restore', href: '/products/medicube-pdrn-gel-mask'},
+  {numeral: 'II',  name: 'Renew',   href: '/products/medicube-wrapping-mask'},
+  {numeral: 'III', name: 'Calm',    href: '/products/abib-heartleaf-gummy-mask'},
+  {numeral: 'IV',  name: 'Refine',  href: '/products/numbuzin-no3-pore-mask'},
+  {numeral: 'V',   name: 'Soothe',  href: '/products/skin1004-centella-sleeping-pack'},
 ];
 
 const MEGA_BY_COLLECTION: {label: string; href: string}[] = [
