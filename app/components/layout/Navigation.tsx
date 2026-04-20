@@ -9,19 +9,33 @@ interface NavLinkItem {
   label: string;
   href: string;
   section?: string;
+  hasMegaMenu?: boolean;
 }
 
 const LEFT_LINKS: NavLinkItem[] = [
-  {label: 'All', href: '/collections/all'},
-  {label: 'Five Rituals', href: '/collections/the-five-rituals', section: 'rituals'},
-  {label: 'Elixirs', href: '/collections/elixirs'},
-  {label: 'Evening Ritual', href: '/products/the-evening-ritual'},
+  {label: 'The Rituals', href: '/collections/the-five-rituals', section: 'rituals', hasMegaMenu: true},
+  {label: 'The Practice', href: '/the-practice', section: 'practice'},
 ];
 
 const RIGHT_LINKS: NavLinkItem[] = [
-  {label: 'Complete Ritual', href: '/products/the-complete-ritual'},
-  {label: 'Build Your Bundle', href: '/build-your-own'},
-  {label: 'Skin Quiz', href: '/quiz'},
+  {label: 'Subscribe', href: '#subscription', section: 'subscription'},
+  {label: 'Quiz', href: '/quiz'},
+];
+
+// Mega-menu content for "The Rituals"
+const MEGA_BY_RITUAL: {numeral: string; name: string; href: string}[] = [
+  {numeral: 'I',   name: 'Restore',    href: '/products/biodance-collagen'},
+  {numeral: 'II',  name: 'Drench',     href: '/products/torriden-dive-in'},
+  {numeral: 'III', name: 'Calm',       href: '/products/abib-heartleaf'},
+  {numeral: 'IV',  name: 'Replenish',  href: '/products/mediheal-nmf'},
+  {numeral: 'V',   name: 'Illuminate', href: '/products/numbuzin-no3'},
+];
+
+const MEGA_BY_COLLECTION: {label: string; href: string}[] = [
+  {label: 'The Complete Ritual', href: '/products/the-complete-ritual'},
+  {label: 'Build Your Bundle',   href: '/build-your-own'},
+  {label: 'The Evening Ritual',  href: '/products/the-evening-ritual'},
+  {label: 'Elixirs',             href: '/collections/elixirs'},
 ];
 
 export interface NavigationProps {
@@ -35,6 +49,24 @@ export function Navigation({theme = 'light'}: NavigationProps) {
   const [activeSection, setActiveSection] = useState<string>('hero');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Mega-menu: track which link's panel is open (by href). Null = all closed.
+  // Close is delayed 200ms via closeTimerRef so diagonal mouse paths from
+  // the link to the panel don't dismiss the menu.
+  const [openMega, setOpenMega] = useState<string | null>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleMegaClose = () => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => setOpenMega(null), 200);
+  };
+  const cancelMegaClose = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+  useEffect(() => () => { if (closeTimerRef.current) clearTimeout(closeTimerRef.current); }, []);
 
   // Scroll-aware background transition
   useEffect(() => {
@@ -112,15 +144,39 @@ export function Navigation({theme = 'light'}: NavigationProps) {
       >
         {/* Left nav links */}
         <div className="hidden lg:flex items-center gap-8 flex-1">
-          {LEFT_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className={navLinkClass(link.section)}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {LEFT_LINKS.map((link) => {
+            if (!link.hasMegaMenu) {
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className={navLinkClass(link.section)}
+                >
+                  {link.label}
+                </Link>
+              );
+            }
+            const isOpen = openMega === link.href;
+            return (
+              <div
+                key={link.href}
+                className="relative"
+                onMouseEnter={() => { cancelMegaClose(); setOpenMega(link.href); }}
+                onMouseLeave={scheduleMegaClose}
+                onFocus={() => { cancelMegaClose(); setOpenMega(link.href); }}
+                onBlur={scheduleMegaClose}
+              >
+                <Link
+                  to={link.href}
+                  className={navLinkClass(link.section)}
+                  aria-haspopup="true"
+                  aria-expanded={isOpen}
+                >
+                  {link.label}
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
         {/* Mobile hamburger */}
@@ -228,6 +284,71 @@ export function Navigation({theme = 'light'}: NavigationProps) {
           )}
         </button>
       </nav>
+
+      {/* ── Mega-menu panel ─────────────────────────────────────────────
+          Continues the 1px sand line from the nav (no new top border)
+          via a subtle shadow only. Closes on mouseleave with a 200ms
+          delay so diagonal paths from link → panel don't dismiss it.
+      */}
+      {LEFT_LINKS.filter((l) => l.hasMegaMenu).map((link) => {
+        const isOpen = openMega === link.href;
+        return (
+          <div
+            key={`mega-${link.href}`}
+            className="hidden lg:block absolute left-0 right-0 top-full bg-cream border-t border-sand overflow-hidden transition-[max-height,opacity] duration-300 ease-out"
+            style={{
+              maxHeight: isOpen ? '340px' : '0px',
+              opacity: isOpen ? 1 : 0,
+              pointerEvents: isOpen ? 'auto' : 'none',
+              boxShadow: isOpen ? '0 12px 40px -12px rgba(0,0,0,0.06)' : 'none',
+            }}
+            onMouseEnter={cancelMegaClose}
+            onMouseLeave={scheduleMegaClose}
+            aria-hidden={!isOpen}
+          >
+            <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-2 gap-16">
+              {/* Column 1 — By ritual */}
+              <div>
+                <p className="text-[11px] uppercase tracking-[4px] font-semibold text-gold mb-5">
+                  By ritual
+                </p>
+                <ul className="flex flex-col gap-3">
+                  {MEGA_BY_RITUAL.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        to={item.href}
+                        className="font-display text-[15px] text-ink hover:text-gold transition-colors inline-flex items-baseline gap-3"
+                      >
+                        <span className="text-gold text-[12px] w-5 inline-block">{item.numeral}</span>
+                        <span>{item.name}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Column 2 — By collection */}
+              <div>
+                <p className="text-[11px] uppercase tracking-[4px] font-semibold text-gold mb-5">
+                  By collection
+                </p>
+                <ul className="flex flex-col gap-3">
+                  {MEGA_BY_COLLECTION.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        to={item.href}
+                        className="font-display text-[15px] text-ink hover:text-gold transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+      })}
     </header>
   );
 }

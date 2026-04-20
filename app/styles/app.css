@@ -20,10 +20,13 @@ body {
   line-height: 1.7;
 }
 
-/* ---- Noise texture overlay ---- */
-body::after {
-  content: '';
-  position: fixed;
+/* ---- Noise texture overlay ----
+   Class-driven so it can be scoped to cream content only. Mounted once
+   inside <body> via root.tsx; absolute+inset:0 stretches it to the
+   positioned ancestor (body is position:relative) so it scrolls with
+   the page and doesn't cover dark sections (Philosophy, nav-dark). */
+.noise-overlay {
+  position: absolute;
   inset: 0;
   z-index: 50;
   pointer-events: none;
@@ -217,18 +220,25 @@ body::after {
   }
 }
 
-@keyframes heroCtasIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Subtle slide-in for the CTA row. Deliberately NO opacity fade so the
+   buttons are visible and clickable from t=0 (removes the old
+   heroCtasIn fade-up which blocked interaction for ~3s). */
+@keyframes heroCtasSlide {
+  from { transform: translateY(6px); }
+  to   { transform: translateY(0); }
 }
 
-/* Initial hidden states */
+/* Initial hidden states.
+ *
+ * Hero reveal timeline (compressed — last animation ends at 1.2s, CTAs
+ * interactive from t=0):
+ *   line-draw  0.0s → 0.8s
+ *   overline   0.15 → 0.55
+ *   words 1/2/3 @ 0.2 / 0.35 / 0.5 (0.7s each, last ends at 1.2s)
+ *   gold-line  0.8 → 1.4
+ *   subtitle   0.9 → 1.4
+ *   ctas       0.0 → 0.4 (transform-only, no opacity block)
+ */
 .hero-line-draw {
   height: 0;
   animation: heroLineDraw 0.8s ease-out 0s both;
@@ -236,8 +246,8 @@ body::after {
 
 .hero-overline {
   opacity: 0;
-  animation: heroFadeSlideUp 0.5s ease both;
-  animation-delay: 0.6s;
+  animation: heroFadeSlideUp 0.4s ease both;
+  animation-delay: 0.15s;
 }
 
 .hero-word-clip {
@@ -247,28 +257,25 @@ body::after {
 .hero-word {
   display: inline-block;
   transform: translateY(100%);
-  /* 1.2s silk reveal per word with cubic-bezier "out-expo". Delays 0.9/1.2/1.5s via inline style. */
-  animation: heroWordReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Per-word reveal. Delays 0.2/0.35/0.5s via inline style in Hero.tsx. */
+  animation: heroWordReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .hero-gold-line {
   transform-origin: center;
   transform: scaleX(0);
-  animation: lineGrow 1s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 2.2s;
+  animation: lineGrow 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.8s;
 }
 
 .hero-subtitle {
   opacity: 0;
-  /* Fades in "immediately after" final word reveal completes (1.5s + 1.2s = 2.7s) */
-  animation: heroSubtitleIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 2.7s;
+  animation: heroSubtitleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.9s;
 }
 
 .hero-ctas {
-  opacity: 0;
-  animation: heroCtasIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 3.2s;
+  animation: heroCtasSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0s both;
 }
 
 /* ---- Reduced motion: show everything immediately ---- */
@@ -340,83 +347,6 @@ body::after {
   font-size: clamp(2rem, 5vw, 4rem);
   line-height: 1.15;
   letter-spacing: -0.01em;
-}
-
-/* ---- Product card image shimmer + overlay ---- */
-
-@keyframes ritualShimmer {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.ritual-img-shimmer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(197, 165, 90, 0.06) 50%,
-    transparent 100%
-  );
-  animation: ritualShimmer 1.5s ease-in-out infinite;
-}
-
-/* Gradient overlay — blends image into text below */
-.ritual-img-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40%;
-  background: linear-gradient(to bottom, transparent 60%, #FAF8F3 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* ---- Product card hover: Ken Burns + button ---- */
-.ritual-img-inner {
-  transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
-  will-change: transform;
-}
-
-.ritual:hover .ritual-img-inner {
-  transform: scale(1.05) var(--drift, translate(-8px, -4px));
-}
-
-.ritual-add {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              background-color 0.3s ease,
-              color 0.3s ease,
-              border-color 0.3s ease;
-}
-
-.ritual:hover .ritual-add {
-  transform: rotate(90deg);
-  background: var(--color-ink);
-  color: var(--color-cream);
-  border-color: var(--color-ink);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ritual-img-shimmer::before {
-    animation: none;
-    display: none;
-  }
-  .ritual-img-inner {
-    transition: none;
-    will-change: auto;
-  }
-  .ritual:hover .ritual-img-inner {
-    transform: none;
-  }
-  .ritual-add {
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-  .ritual:hover .ritual-add {
-    transform: none;
-  }
 }
 
 /* ---- Ritual card entrance ---- */
@@ -668,22 +598,6 @@ body::after {
   }
   .quickview-modal {
     transition: none;
-  }
-}
-
-/* ---- Scroll snap (mobile proximity) ---- */
-
-@media (max-width: 768px) {
-  main {
-    scroll-snap-type: y proximity;
-  }
-
-  #hero,
-  #rituals,
-  #philosophy,
-  #practice,
-  #subscription {
-    scroll-snap-align: start;
   }
 }
 

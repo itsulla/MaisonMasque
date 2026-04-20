@@ -27,7 +27,7 @@ export function Hero() {
             <span key={word.text} className="hero-word-clip inline-block overflow-hidden">
               <span
                 className={`hero-word inline-block${word.italic ? ' italic text-gold' : ''}`}
-                style={{animationDelay: `${0.9 + i * 0.3}s`}}
+                style={{animationDelay: `${0.2 + i * 0.15}s`}}
               >
                 {word.text}
               </span>

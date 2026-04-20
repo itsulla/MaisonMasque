@@ -1,6 +1,7 @@
 import {Link} from '@remix-run/react';
 import {useState} from 'react';
 import {ritualConfig} from '~/lib/ritualConfig';
+import {ChooseYourRitual} from '~/components/home/ChooseYourRitual';
 
 interface QuizResultProps {
   handle: string;
@@ -56,6 +57,11 @@ export function QuizResult({handle, onRestart}: QuizResultProps) {
           </Link>
         </div>
       )}
+
+      {/* Explore the other four rituals (relocated from homepage) */}
+      <section className="py-14">
+        <ChooseYourRitual />
+      </section>
 
       {/* Bundle upsell */}
       <div className="mt-6">

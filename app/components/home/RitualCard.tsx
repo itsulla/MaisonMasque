@@ -51,7 +51,7 @@ export function RitualCard({product, index, className = '', ritualNumeral, onQui
       <Link to={`/products/${product.handle}`} className="block">
         <div className="ritual-img ritual-image-wrap product-tile-bg h-[280px] relative">
           <div
-            className="ritual-img-inner w-full h-full transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform group-hover:scale-[1.03]"
+            className="w-full h-full transition-transform duration-[600ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform group-hover:scale-[1.03]"
             style={{['--drift' as string]: drift}}
           >
             {product.image ? (
@@ -70,7 +70,6 @@ export function RitualCard({product, index, className = '', ritualNumeral, onQui
               </div>
             )}
           </div>
-          <div className="ritual-img-overlay" aria-hidden="true" />
           {ritualNumeral && <RitualNumeral numeral={ritualNumeral} />}
         </div>
       </Link>
@@ -118,7 +117,7 @@ export function RitualCard({product, index, className = '', ritualNumeral, onQui
           <button
             type="button"
             onClick={() => onAddToCart?.(product)}
-            className="ritual-add w-8 h-8 border border-sand flex items-center justify-center text-stone transition-[transform,background-color,color,border-color] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.92]"
+            className="w-8 h-8 border border-sand flex items-center justify-center text-stone transition-[transform,background-color,color,border-color] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.92]"
             aria-label={`Add ${product.name} to bag`}
           >
             +

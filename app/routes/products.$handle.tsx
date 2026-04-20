@@ -1,7 +1,10 @@
 import {useLoaderData, type MetaFunction} from '@remix-run/react';
 import {json, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {ProductPage} from '~/components/product/ProductPage';
+import {ElixirsPromo} from '~/components/home/ElixirsPromo';
+import {MorningVeilPromo} from '~/components/home/MorningVeilPromo';
 import {mergeProduct, type MergedProduct, type ShopifyProduct} from '~/lib/productAdapter';
+import {getRitualProducts} from '~/lib/products';
 import {PRODUCT_QUERY} from '~/lib/queries';
 
 interface LoaderData {
@@ -190,10 +193,27 @@ function ProductJsonLd({product}: {product: MergedProduct}) {
 export default function ProductRoute() {
   const {product} = useLoaderData<typeof loader>();
 
+  // MorningVeilPromo renders only when the current product IS a ritual
+  // (i.e. not on the morning-veil product's own page, and not on elixirs etc.).
+  const ritualHandles = new Set(getRitualProducts().map((p) => p.handle));
+  const isRitual = ritualHandles.has(product.handle);
+
   return (
     <>
       <ProductJsonLd product={product} />
       <ProductPage product={product} />
+
+      {/* Elixirs promo — on every PDP, below the product content */}
+      <section className="py-14">
+        <ElixirsPromo />
+      </section>
+
+      {/* Morning Veil promo — only on the 5 ritual PDPs */}
+      {isRitual && (
+        <section className="py-14">
+          <MorningVeilPromo />
+        </section>
+      )}
     </>
   );
 }

@@ -6,9 +6,9 @@ import {Philosophy} from '~/components/home/Philosophy';
 import {RitualGuide} from '~/components/home/RitualGuide';
 import {Subscription} from '~/components/home/Subscription';
 import {TrustBar} from '~/components/shared/TrustBar';
-import {ChooseYourRitual} from '~/components/home/ChooseYourRitual';
-import {MorningVeilPromo} from '~/components/home/MorningVeilPromo';
-import {ElixirsPromo} from '~/components/home/ElixirsPromo';
+// ChooseYourRitual → relocated to QuizResult
+// MorningVeilPromo + ElixirsPromo → relocated to products.$handle (PDP)
+// Component files remain in app/components/home/ for reuse.
 
 export const meta: MetaFunction = () => {
   return [
@@ -17,6 +17,7 @@ export const meta: MetaFunction = () => {
     },
     {
       name: 'description',
+      // TODO: update brand list once product catalog is final
       content:
         'Curated Korean sheet masks from Medicube, Anua, and SKIN1004. Shipped worldwide to Australia, UK, Europe and South Africa.',
     },
@@ -28,6 +29,7 @@ const ORGANIZATION_JSON_LD = {
   '@type': 'Organization',
   name: 'Maison Masque',
   url: 'https://maisonmasque.com',
+  // TODO: update brand list once product catalog is final
   description:
     'Curated Korean sheet masks from Medicube, Anua, and SKIN1004. Sourced in Hong Kong, shipped worldwide.',
 };
@@ -43,10 +45,6 @@ export default function Homepage() {
       <TrustBar />
       <Divider />
       <FiveRituals />
-      <ElixirsPromo />
-      <Divider />
-      <ChooseYourRitual />
-      <MorningVeilPromo />
       <Divider />
       <Philosophy />
       <Divider />

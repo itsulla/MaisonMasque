@@ -374,7 +374,7 @@ function AllMasksPage({
                   <button
                     type="button"
                     onClick={() => handleAddToCart(product)}
-                    className="ritual-add w-8 h-8 border border-sand flex items-center justify-center text-stone transition-[transform,background-color,color,border-color] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.92]"
+                    className="w-8 h-8 border border-sand flex items-center justify-center text-stone transition-[transform,background-color,color,border-color] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.92]"
                     aria-label={`Add ${product.name} to bag`}
                   >
                     +

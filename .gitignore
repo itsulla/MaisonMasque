@@ -9,3 +9,4 @@ public/images/products/brand/
 server.dev.js.bak
 server.prod.js.bak
 .claude/
+h2_deploy_log.json

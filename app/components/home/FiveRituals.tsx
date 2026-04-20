@@ -71,7 +71,7 @@ export function FiveRituals() {
 
       {/* Complete Ritual banner */}
       {bundle && (
-        <div className="border border-sand mt-0 border-t-0">
+        <div className="border border-sand mt-12">
           <div className="flex flex-col md:flex-row items-center justify-between px-8 py-8 gap-6">
             {/* Left */}
             <div className="flex items-center gap-3">

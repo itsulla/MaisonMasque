@@ -82,7 +82,8 @@ export function HydrateFallback() {
         <Meta />
         <Links />
       </head>
-      <body className="bg-cream text-ink font-body antialiased">
+      <body className="relative bg-cream text-ink font-body antialiased">
+        <div className="noise-overlay" aria-hidden="true" />
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <span className="font-display text-2xl uppercase tracking-[4px] text-ink">
@@ -182,9 +183,10 @@ export default function App() {
         <AnalyticsScripts />
       </head>
       <body
-        className={`font-body antialiased ${isDark ? 'text-cream' : 'bg-cream text-ink'}`}
+        className={`relative font-body antialiased ${isDark ? 'text-cream' : 'bg-cream text-ink'}`}
         style={isDark ? {backgroundColor: '#2C2722'} : undefined}
       >
+        <div className="noise-overlay" aria-hidden="true" />
         <CurrencyProvider>
           <CartProvider>
             <QuizDrawerProvider>
