@@ -2,7 +2,6 @@
 node_modules/
 dist/
 .cache/
-public/images/products/brand/
 
 .shopify
 .env.backup
